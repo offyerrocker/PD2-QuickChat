@@ -131,6 +131,8 @@ function RadialMenuObject:setup(params) --create new instance of a radial select
 		focus_alpha = params.focus_alpha or 1,
 		unfocus_alpha = params.unfocus_alpha or 0.5,
 		default_mouseover_text = params.default_mouseover_text,
+		animate_open_duration = params.animate_open_duration or 0.25,
+		animate_open_size_mul = params.animate_open_size_mul or 0.1,
 		animate_focus_grow_size = params.animate_focus_grow_size or 1.66,
 		animate_focus_duration = params.animate_focus_duration or 0.33,
 		animate_unfocus_duration = params.animate_unfocus_duration or 0.33,
@@ -248,8 +250,19 @@ function RadialMenuDialog:recreate_gui()
 	else
 		panel = self._class_panel:panel({
 			name = self._parent:GetId() .. "_dialog_panel",
+			halign = "center",
+			valign = "center",
 			visible = false
 		})
+		panel:set_center(panel:parent():center())
+		--[[
+		panel:rect({
+			name="debug",
+			halign="scale",
+			valign="scale",
+			color=Color.red:with_alpha(0.5)
+		})
+		--]]
 		self._panel = panel
 	end
 	
@@ -282,8 +295,8 @@ function RadialMenuDialog:recreate_gui()
 		w = radius,
 		h = radius,
 		color = Color.white,
-		halign = "grow",
-		valign = "grow",
+		halign = "scale",
+		valign = "scale",
 		visible = false, --shown later
 		layer = 5
 	})
@@ -295,8 +308,8 @@ function RadialMenuDialog:recreate_gui()
 		texture = DARKLIGHT_TEXTURE,
 		w = radius,
 		h = radius,
-		halign = "grow",
-		valign = "grow",
+		halign = "scale",
+		valign = "scale",
 		alpha = 0.66,
 		layer = 1,
 		visible = true
@@ -310,8 +323,8 @@ function RadialMenuDialog:recreate_gui()
 		font_size = data.font_size or 24,
 		align = "center",
 		vertical = "center",
-		valign = "grow", --halign/valign don't apply to text object font size, only clipping box
-		halign = "grow",
+		valign = "scale", --halign/valign don't apply to text object font size, only clipping box
+		halign = "scale",
 		layer = 6,
 		visible = data.mouseover_text_visible
 	})
@@ -339,8 +352,8 @@ function RadialMenuDialog:recreate_gui()
 			w = icon_w,
 			h = icon_h,
 			color = item.color,
-			halign = "grow",
-			valign = "grow",
+			halign = "scale",
+			valign = "scale",
 			alpha = data.unfocus_alpha or 0.5,
 			layer = 4
 --,			visible = i == 1
@@ -354,8 +367,8 @@ function RadialMenuDialog:recreate_gui()
 			h = radius,
 			color = arc_length_col,
 			rotation = arc_position,
-			halign = "grow",
-			valign = "grow",
+			halign = "scale",
+			valign = "scale",
 			layer = 3,
 			visible = false --disable unless it's visible
 		})
@@ -384,8 +397,8 @@ function RadialMenuDialog:recreate_gui()
 			h = radius,
 			color = arc_length_col,
 			rotation = arc_position,
-			halign = "grow",
-			valign = "grow",
+			halign = "scale",
+			valign = "scale",
 			layer = 2,
 			visible = true --disabled by default
 		})
@@ -587,7 +600,7 @@ function RadialMenuDialog:callback_mouse_moved(o,x,y)
 			angle = angle % 360
 			
 			cursor:set_rotation(angle)
-			cursor:set_center(c_x,c_y)
+			cursor:set_world_center(self._panel:world_center()) --c_x,c_y
 			local num_items = #self._items
 			
 			local angle_interval = 360 / num_items
@@ -701,7 +714,47 @@ end
 
 function RadialMenuDialog:show()
 	self._manager:event_dialog_shown(self)
+	
+	local w,h = self._panel:parent():size()
+	
+	local duration = self._data.animate_open_duration
+	local scalar = self._data.animate_open_size_mul
+	
+	local w_small,h_small = w * scalar,h * scalar
+	local d_w = w - w_small
+	local d_h = h - h_small
+	
+	self._panel:stop()
+	self._panel:set_size(w,h)
+	self._panel:animate(function(o)
+		local parent = o:parent()
+		
+		local t = 0
+		local dt = 0
+		local lerp2 = 0
+		while t < duration do
+			lerp2 = math.bezier(
+				{
+					0,
+					0,
+					1,
+					1
+				},
+				t / duration
+			)
+			
+			o:set_size(w_small+(d_w*lerp2),h_small+(d_h*lerp2))
+			o:set_center(parent:center())
+			-- not sure why valign/halign center isn't fixing this automatically
+			
+			dt = coroutine.yield()
+			t = t + dt
+		end
+		o:set_size(w,h)
+		o:set_center(parent:center())
+	end)
 	self._panel:show()
+	
 	if self._data.reset_mouse_position_on_show then
 		_G.managers.mouse_pointer:set_mouse_world_position(self._panel:world_center())
 	end
@@ -723,7 +776,22 @@ function RadialMenuDialog:hide(select_current)
 	end
 	
 	self:set_input_enabled(false)
+	self._panel:stop()
 	self._panel:hide()
+	
+	local parent = self._panel:parent()
+	local c_x,c_y = parent:center()
+	self._panel:set_size(parent:size())
+	self._panel:set_center(c_x,c_y)
+	-- reset item positions
+	for index,item_data in pairs(self._items) do 
+		local icon = self._panel:child("icon_" .. index)
+		icon:stop()
+		icon:set_size(item_data.w,item_data.h)
+		icon:set_center(item_data.icon_x,item_data.icon_y)
+		icon:set_alpha(item_data.unfocus_alpha)
+	end
+	
 	self.is_active = false
 	self._manager:event_dialog_hidden(self)
 end

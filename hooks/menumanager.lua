@@ -1,5 +1,4 @@
 --TODO
-	-- allow communication wheels during menu
 	-- toggle for allowing unit tagging
 	-- allow peers to send a mute command
 	-- radial deadzone/size/alpha menu option
@@ -81,6 +80,7 @@
 		-- use pd2 particle system?
 		
 	--BUGS
+		-- better input blocking, eg. when chat is open
 		--TimerManager:game():time() between client and host is desynced; use a different timer
 		--QuickChat detects controller mode if a controller is plugged in, even if keyboard is the "main" input
 		--character unit waypoints are in an unexpected place; move above head instead
@@ -1495,7 +1495,8 @@ function QuickChat.parse_l10n_csv(path) -- not yet implemented
 		local loc_id = all_data[1][i]
 		local loc_str = all_data[2][i]
 		if loc_id and string.gsub(loc_id,"%s","") ~= "" then
-			lang_data[loc_id] = loc_str
+			-- un-escape quotes and newlines
+			lang_data[loc_id] = string.gsub(string.gsub(loc_str,"\\n","\n"),"\\","\"")
 		end
 	end
 	return lang_data
@@ -2041,6 +2042,10 @@ function QuickChat:LoadMenuFromIni(ini_data) --converts and validates saved data
 			"unfocus_alpha",
 			"item_margin",
 			"item_text_visible",
+			"animate_open_duration",
+			"animate_open_size_mul",
+			"animate_focus_grow_size",
+			"animate_focus_duration",
 			"mouseover_text_visible",
 			"reset_mouse_position_on_show"
 			--"default_mouseover_text"
@@ -2061,6 +2066,10 @@ function QuickChat:LoadMenuFromIni(ini_data) --converts and validates saved data
 			unfocus_alpha = 0.5,
 			item_margin = 0.2,
 			item_text_visible=true,
+			animate_open_duration = 0.25,
+			animate_open_size_mul = 0.1,
+			animate_focus_grow_size = 1.66,
+			animate_focus_duration = 0.33,
 			mouseover_text_visible=true,
 			reset_mouse_position_on_show=true,
 			--default_mouseover_text = nil
