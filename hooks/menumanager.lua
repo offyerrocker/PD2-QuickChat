@@ -3482,6 +3482,11 @@ function QuickChat:Update(source,t,dt)
 end
 
 function QuickChat:UpdateGame(t,dt)
+	self:UpdateInput(t,dt)
+	self:UpdateWaypoints(t,dt)
+end
+
+function QuickChat:UpdateInput(t,dt)
 	if self._is_binding_listener_active then
 		-- block keybind execution if currently listening for rebind key input
 		return
@@ -3503,7 +3508,6 @@ function QuickChat:UpdateGame(t,dt)
 	elseif managers.menu_component and managers.menu_component:input_focut_game_chat_gui() then
 		return
 	end
-	
 	
 	local controller = self:GetController()
 	if not controller then
@@ -3549,7 +3553,6 @@ function QuickChat:UpdateGame(t,dt)
 			input_data.state = state
 		end
 	end
-	self:UpdateWaypoints(t,dt)
 end
 
 -- update positional audio;
