@@ -1,4 +1,11 @@
 --TODO
+	-- validate incoming wps (no crashing)
+		-- enforce no-pinging-teammates from incoming pings, just in case
+		
+	-- send existing wps to new drop-in peers
+	
+	-- last selected radial item icon briefly floats from offscreen when hidden and re-shown
+	
 	-- toggle for allowing unit tagging
 	-- allow peers to send a mute command
 	-- radial deadzone/size/alpha menu option
@@ -2287,8 +2294,8 @@ function QuickChat:AddWaypoint(params) --called whenever local player attempts t
 	end
 	local debug_draw_enabled = self:IsDebugDrawEnabled()
 	local debug_draw_duration = self._DEBUG_DRAW_DURATION
-	
-	local peer_id = managers.network:session():local_peer():id()
+	local session = managers.network:session()
+	local peer_id = session:local_peer():id()
 	params = params or {}
 	local is_neutral_ping = params.is_neutral_ping
 	
@@ -2324,7 +2331,15 @@ function QuickChat:AddWaypoint(params) --called whenever local player attempts t
 		if state._last_access_camera and state._last_access_camera:has_camera_unit() then
 			table.insert(ignore_units,1,state._last_access_camera:camera_unit())
 		end
-	end	
+	end
+	
+	-- don't allow pinging teammates
+	for _,peer in pairs(session:peers()) do 
+		local peer_unit = peer:unit()
+		if alive(peer_unit) then
+			table.insert(ignore_units,1,peer_unit)
+		end
+	end
 	
 	mvec3_mul(tmp_camto_vec3,self.WAYPOINT_RAYCAST_DISTANCE)
 	mvec3_add(tmp_camto_vec3,tmp_camfrom_vec3)
