@@ -1174,9 +1174,7 @@ QuickChat._keybind_callbacks = {
 	},
 	waypoints_clear_all = {
 		callback_pressed = function(t,dt,action_data)
-			for peer_id,waypoints in pairs(QuickChat._synced_waypoints) do 
-				QuickChat:DisposeWaypoints(peer_id)
-			end
+			QuickChat:DisposeAllWaypoints()
 		end,
 		callback_released = nil,
 		callback_held = nil,
@@ -2897,6 +2895,12 @@ function QuickChat:DisposeWaypoints(peer_id)
 	end
 end
 
+function QuickChat:DisposeAllWaypoints()
+	for peer_id,waypoints in pairs(self._synced_waypoints) do 
+		self:DisposeWaypoints(peer_id)
+	end
+end
+			
 function QuickChat:AcknowledgeWaypoint(waypoint_owner,waypoint_id)
 	self:_AcknowledgeWaypoint(managers.network:session():local_peer():id(),waypoint_owner,waypoint_id)
 	self:SendAcknowledgeWaypoint(waypoint_owner,waypoint_id)
