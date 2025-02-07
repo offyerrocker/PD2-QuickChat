@@ -2499,21 +2499,48 @@ function QuickChat:AddWaypoint(params) --called whenever local player attempts t
 end
 
 function QuickChat:_SendWaypoint(waypoint_data) --format data and send to peers
+	local gcw_compat = self:IsGCWCompatibilitySendEnabled()
+	local sync_string,tdlq_gcw_msg_id,tdlq_gcw_msg_body = self:SerializeWaypoint(waypoint_data,gcw_compat)
+	if sync_string then
+--		self:Log(sync_string)
+		for _,peer in pairs(managers.network:session():peers()) do 
+			if peer._quickchat_version then
+				if peer._quickchat_version == self.API_VERSION then
+					LuaNetworking:SendToPeer(peer:id(),self.SYNC_MESSAGE_WAYPOINT_ADD,sync_string)
+				end
+			elseif gcw_compat then -- and peer._gcw_version == self.SYNC_TDLQGCW_VERSION then
+				-- just send gcw waypoint to all peers just in case they have the mod but haven't sent a waypoint yet
+				if tdlq_gcw_msg_id and tdlq_gcw_msg_body then
+					LuaNetworking:SendToPeer(peer:id(),tdlq_gcw_msg_id,tdlq_gcw_msg_body)
+				end
+				--Print("Sending waypoint. type", waypoint_type, "interactable",is_gcw_interactable_unit,"message",tdlq_gcw_msg_id,tdlq_gcw_msg_body)
+			end
+		end
+	end
+end
+
+function QuickChat:SerializeWaypoint(waypoint_data,use_gcw)
 	local sync_string
-	local is_gcw_interactable_unit = waypoint_data.is_gcw_interactable_unit
 	local to_int = self.to_int
-	local waypoint_type = to_int(waypoint_data.waypoint_type)
-	local label_index = to_int(waypoint_data.label_index)
-	local icon_index = to_int(waypoint_data.icon_index)
-	local timer_string = waypoint_data.timer_string
 	local end_t = waypoint_data.end_t
+	local timer_string = waypoint_data.timer_string
 	if end_t and end_t ~= 0 then
+		if end_t < TimerManager:game():time() then
+			-- likely caught the one frame where the timer had already expired but the waypoint hadn't been deleted;
+			-- don't bother sending
+			return
+		end
 		local int = math.floor(end_t)
 		local dec = end_t - int
 		timer_string = string.format("%i:%i",int,dec * 100)
 	else
 		timer_string = "0"
 	end
+	local is_gcw_interactable_unit = waypoint_data.is_gcw_interactable_unit
+	local waypoint_type = to_int(waypoint_data.waypoint_type)
+	local label_index = to_int(waypoint_data.label_index)
+	local icon_index = to_int(waypoint_data.icon_index)
+	
 	local pos = waypoint_data.position or {}
 	local x = to_int(pos.x)
 	local y = to_int(pos.y)
@@ -2541,37 +2568,49 @@ function QuickChat:_SendWaypoint(waypoint_data) --format data and send to peers
 			unit_id
 		)
 	end
-	
-	local tdlq_gcw_msg_id,tdlq_gcw_msg_body
-	if sync_string then
---		self:Log(sync_string)
-		for _,peer in pairs(managers.network:session():peers()) do 
-			if peer._quickchat_version then
-				if peer._quickchat_version == self.API_VERSION then
-					LuaNetworking:SendToPeer(peer:id(),self.SYNC_MESSAGE_WAYPOINT_ADD,sync_string)
-				end
-			elseif self:IsGCWCompatibilitySendEnabled() then -- and peer._gcw_version == self.SYNC_TDLQGCW_VERSION then
-				-- just send gcw waypoint to all peers just in case they have the mod but haven't sent a waypoint yet
-				if not tdlq_gcw_msg_id then
-					if waypoint_type == self.WAYPOINT_TYPES.UNIT and is_gcw_interactable_unit then
-						tdlq_gcw_msg_id = self.SYNC_TDLQGCW_WAYPOINT_UNIT
-						tdlq_gcw_msg_body = unit_id
-					elseif waypoint_type == self.WAYPOINT_TYPES.POSITION or self:UseGCWUnitPingResolution() then
-						-- if unit is not applicable to be a gcw unit ("Attach") waypoint, 
-						-- convert it to a static position waypoint instead
-						tdlq_gcw_msg_id = self.SYNC_TDLQGCW_WAYPOINT_PLACE
-						tdlq_gcw_msg_body = string.format("%.1f,%.1f,%.1f",x,y,z)
-					end
-					if tdlq_gcw_msg_id and tdlq_gcw_msg_body then
-						LuaNetworking:SendToPeer(peer:id(),tdlq_gcw_msg_id,tdlq_gcw_msg_body)
-					end
-					--Print("Sending waypoint. type", waypoint_type, "interactable",is_gcw_interactable_unit,"message",tdlq_gcw_msg_id,tdlq_gcw_msg_body)
-				end
-			else
-				--different version
-			end
+	if use_gcw then
+		if waypoint_type == self.WAYPOINT_TYPES.UNIT and is_gcw_interactable_unit then
+			tdlq_gcw_msg_id = self.SYNC_TDLQGCW_WAYPOINT_UNIT
+			tdlq_gcw_msg_body = unit_id
+		elseif waypoint_type == self.WAYPOINT_TYPES.POSITION or self:UseGCWUnitPingResolution() then
+			-- if unit is not applicable to be a gcw unit ("Attach") waypoint, 
+			-- convert it to a static position waypoint instead
+			tdlq_gcw_msg_id = self.SYNC_TDLQGCW_WAYPOINT_PLACE
+			tdlq_gcw_msg_body = string.format("%.1f,%.1f,%.1f",x,y,z)
 		end
 	end
+	
+	return sync_string,tdlq_gcw_msg_id,tdlq_gcw_msg_body
+end
+
+function QuickChat:SendAllMyWaypointsToPeer(peer_id)
+	
+	local gcw_compat = self:IsGCWCompatibilitySendEnabled()
+	local session = managers.network:session()
+	
+	local peer = session:peer(peer_id)
+	local my_peer_id = session:local_peer():id()
+	for _,waypoint_data in pairs(self._synced_waypoints[my_peer_id]) do
+		if waypoint_data.creation_data then
+			local sync_string,tdlq_gcw_msg_id,tdlq_gcw_msg_body = self:SerializeWaypoint(waypoint_data.creation_data,gcw_compat)
+			if peer._quickchat_version and sync_string then
+				if peer._quickchat_version == self.API_VERSION then
+					LuaNetworking:SendToPeer(peer_id,self.SYNC_MESSAGE_WAYPOINT_ADD,sync_string)
+				else
+					-- version mismatch
+				end
+			elseif gcw_compat then
+				if tdlq_gcw_msg_id and tdlq_gcw_msg_body then
+					LuaNetworking:SendToPeer(peer_id,tdlq_gcw_msg_id,tdlq_gcw_msg_body)
+				end
+			end
+		end
+		--LuaNetworking:SendToPeer(peer_id,msg_id,msg_body)
+		
+		--todo maybe don't recopy waypoint data? would be easier to just send the original,
+		-- if making the waypoint didn't mutate that data 
+	end
+	
 end
 
 function QuickChat:ReceiveAddWaypoint(peer_id,message_string) --sync create waypoint request from peers
@@ -2828,6 +2867,7 @@ function QuickChat:_AddWaypoint(peer_id,waypoint_data) --called for both local p
 		end
 		
 		local new_waypoint = {
+			creation_data = waypoint_data,
 			panel = waypoint_panel,
 			is_gcw = waypoint_data.is_gcw,
 			icon = icon,

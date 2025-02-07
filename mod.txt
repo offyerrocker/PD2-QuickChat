@@ -13,16 +13,12 @@
 			"script_path" : "hooks/menumanager.lua"
 		},
 		{
-			"hook_id" : "lib/network/base/clientnetworksession",
-			"script_path" : "hooks/clientnetworksession.lua"
-		},
-		{
 			"hook_id" : "lib/managers/chatmanager",
 			"script_path" : "hooks/chatmanager.lua"
 		},
 		{
-			"hook_id" : "lib/network/base/hostnetworksession",
-			"script_path" : "hooks/hostnetworksession.lua"
+			"hook_id" : "lib/network/base/basenetworksession",
+			"script_path" : "hooks/basenetworksession.lua"
 		},
 		{
 			"hook_id" : "lib/network/base/networkpeer",
