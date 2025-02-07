@@ -2950,7 +2950,7 @@ function QuickChat:SendAcknowledgeWaypoint(waypoint_owner,waypoint_id)
 	for _,peer in pairs(managers.network:session():peers()) do 
 		if peer._quickchat_version == self.API_VERSION then
 			-- only send to qc peers
-			LuaNetworking:SendToPeer(peer:id(),self.SYNC_MESSAGE_WAYPOINT_ADD,sync_string)
+			LuaNetworking:SendToPeer(peer:id(),self.SYNC_MESSAGE_WAYPOINT_ACKNOWLEDGE,sync_string)
 		end
 	end
 end
