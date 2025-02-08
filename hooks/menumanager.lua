@@ -2501,13 +2501,13 @@ end
 
 function QuickChat:_SendWaypoint(waypoint_data) --format data and send to peers
 	local gcw_compat = self:IsGCWCompatibilitySendEnabled()
-	local sync_string,tdlq_gcw_msg_id,tdlq_gcw_msg_body = self:SerializeWaypoint(waypoint_data,gcw_compat)
+	local sync_id,sync_string,tdlq_gcw_msg_id,tdlq_gcw_msg_body = self:SerializeWaypoint(waypoint_data,gcw_compat)
 	if sync_string then
 --		self:Log(sync_string)
 		for _,peer in pairs(managers.network:session():peers()) do 
 			if peer._quickchat_version then
 				if peer._quickchat_version == self.API_VERSION then
-					LuaNetworking:SendToPeer(peer:id(),self.SYNC_MESSAGE_WAYPOINT_ADD,sync_string)
+					LuaNetworking:SendToPeer(peer:id(),sync_id,sync_string)
 				end
 			elseif gcw_compat then -- and peer._gcw_version == self.SYNC_TDLQGCW_VERSION then
 				-- just send gcw waypoint to all peers just in case they have the mod but haven't sent a waypoint yet
@@ -2522,6 +2522,7 @@ end
 
 function QuickChat:SerializeWaypoint(waypoint_data,use_gcw)
 	local sync_string
+	local sync_id = self.SYNC_MESSAGE_WAYPOINT_ADD
 	local to_int = self.to_int
 	local end_t = waypoint_data.end_t
 	local timer_string = waypoint_data.timer_string
@@ -2581,7 +2582,31 @@ function QuickChat:SerializeWaypoint(waypoint_data,use_gcw)
 		end
 	end
 	
-	return sync_string,tdlq_gcw_msg_id,tdlq_gcw_msg_body
+	return sync_id,sync_string,tdlq_gcw_msg_id,tdlq_gcw_msg_body
+end
+
+function QuickChat:SerializeRemoveWaypoint(waypoint_data,use_gcw)
+	if not waypoint_data then
+		return
+	end
+	local sync_id,sync_string,tdlq_gcw_msg_id,tdlq_gcw_msg_body
+	local to_int = self.to_int
+	local waypoint_type = to_int(waypoint_data.waypoint_type)
+	local pos = waypoint_data.position or {}
+	local x = to_int(pos.x)
+	local y = to_int(pos.y)
+	local z = to_int(pos.z)
+	local unit_id = to_int(waypoint_data.unit_id)
+
+	sync_id = self.SYNC_MESSAGE_WAYPOINT_REMOVE
+	sync_string = string.format("%i;%i;%i;%i;%i",waypoint_type,x,y,z,unit_id)
+	
+	if use_gcw then
+		tdlq_gcw_msg_id = self.SYNC_TDLQGCW_WAYPOINT_REMOVE
+		tdlq_gcw_msg_body = string.format("%.1f,%.1f,%.1f",x,y,z)
+	end
+	
+	return sync_id,sync_string,tdlq_gcw_msg_id,tdlq_gcw_msg_body
 end
 
 function QuickChat:SendAllMyWaypointsToPeer(peer_id)
@@ -2593,10 +2618,10 @@ function QuickChat:SendAllMyWaypointsToPeer(peer_id)
 	local my_peer_id = session:local_peer():id()
 	for _,waypoint_data in pairs(self._synced_waypoints[my_peer_id]) do
 		if waypoint_data.creation_data then
-			local sync_string,tdlq_gcw_msg_id,tdlq_gcw_msg_body = self:SerializeWaypoint(waypoint_data.creation_data,gcw_compat)
+			local sync_id,sync_string,tdlq_gcw_msg_id,tdlq_gcw_msg_body = self:SerializeWaypoint(waypoint_data.creation_data,gcw_compat)
 			if peer._quickchat_version and sync_string then
 				if peer._quickchat_version == self.API_VERSION then
-					LuaNetworking:SendToPeer(peer_id,self.SYNC_MESSAGE_WAYPOINT_ADD,sync_string)
+					LuaNetworking:SendToPeer(peer_id,sync_id,sync_string)
 				else
 					-- version mismatch
 				end
@@ -2894,25 +2919,17 @@ end
 function QuickChat:RemoveWaypoint(waypoint_index) --from local player
 	local session = managers.network:session()
 	local peer_id = session:local_peer():id()
+	local use_gcw = self:IsGCWCompatibilitySendEnabled()
 	local waypoint_data = self._synced_waypoints[peer_id][waypoint_index]
-	if waypoint_data then
-		local to_int = self.to_int
-		local waypoint_type = to_int(waypoint_data.waypoint_type)
-		local pos = waypoint_data.position or {}
-		local x = to_int(pos.x)
-		local y = to_int(pos.y)
-		local z = to_int(pos.z)
-		local unit_id = to_int(waypoint_data.unit_id)
-		local sync_string = string.format("%i;%i;%i;%i;%i",waypoint_type,x,y,z,unit_id)
-		
-		for _,peer in pairs(session:peers()) do 
-			local peer_version = peer._quickchat_version
-			if peer_version == self.API_VERSION then
-				--v2
-				LuaNetworking:SendToPeer(peer:id(),self.SYNC_MESSAGE_WAYPOINT_REMOVE,sync_string)
-			elseif self:IsGCWCompatibilitySendEnabled() then
-				LuaNetworking:SendToPeer(peer:id(),self.SYNC_TDLQGCW_WAYPOINT_REMOVE,string.format("%.1f,%.1f,%.1f",x,y,z))
+	local sync_id,sync_string,tdlq_gcw_msg_id,tdlq_gcw_msg_body = self:SerializeRemoveWaypoint(waypoint_data,use_gcw)
+	for _,peer in pairs(session:peers()) do 
+		local peer_version = peer._quickchat_version
+		if peer_version == self.API_VERSION then
+			if sync_string then
+				LuaNetworking:SendToPeer(peer:id(),sync_id,sync_string)
 			end
+		elseif use_gcw and tdlq_gcw_msg_id and tdlq_gcw_msg_body then
+			LuaNetworking:SendToPeer(peer:id(),tdlq_gcw_msg_id,tdlq_gcw_msg_body)
 		end
 	end
 	self:_RemoveWaypoint(peer_id,waypoint_index)
@@ -3300,6 +3317,23 @@ function QuickChat:RegisterPeerById(peer_id,version)
 				end
 				if not peer._quickchat_version then
 					peer._quickchat_version = version
+					
+					-- if any waypoints were already sent as gcw waypoints,
+					-- (eg. if waypoint already existed and was auto-synced on peer join as gcw waypoint)
+					-- then send the gcw remove message, and send them as qc waypoints instead
+					
+					-- dispose all gcw waypoints
+					local local_peer_id = session:local_peer():id()
+					local my_waypoints = local_peer_id and self._synced_waypoints[local_peer_id]
+					if my_waypoints then
+						for i,waypoint_data in pairs(my_waypoints) do
+							local sync_id,sync_string,tdlq_gcw_msg_id,tdlq_gcw_msg_body = self:SerializeRemoveWaypoint(waypoint_data,true)
+							LuaNetworking:SendToPeer(peer_id,tdlq_gcw_msg_id,tdlq_gcw_msg_body)
+						end
+					end
+					
+					self:SendAllMyWaypointsToPeer(peer_id)
+					
 					if self:IsWaypointRegistrationAlertEnabled() then
 						local peer_name = peer:name()
 						local sender_name = managers.localization:text("qc_menu_main_title")
