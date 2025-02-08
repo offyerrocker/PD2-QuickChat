@@ -2,6 +2,14 @@
 	-- validate incoming wps (no crashing)
 		-- enforce no-pinging-teammates from incoming pings, just in case
 	
+	--auto icon for units
+		--by interaction id; only in neutral ping
+		-- also with menu option
+	
+	
+	-- just hide waypoints on enter forbidden state and show them again on enter whitelisted state
+		-- don't jump through so many hoops 
+		-- this would fix waypoints being visible when existing waypoints are synced upon dropping-in to game in progress
 	
 	
 	-- last selected radial item icon briefly floats from offscreen when hidden and re-shown
@@ -46,8 +54,6 @@
 			
 		--subtle light glow at waypoint area
 		--feedback on waypoint placement fail
-		--auto icon for units
-			--by interaction id; only in neutral ping
 		
 		-- adjust sound vector normalization
 			-- based on distance?
@@ -72,7 +78,7 @@
 		--localize menu button names for controllers, per gamepad type
 		--allow selecting button by waiting at menu (for controllers) for x seconds
 			--(this allows controllers to bind or reserve any options they desire, without interfering with menu operation)
-		--remove waypoints on death?
+		--remove waypoint on pinged unit death?
 			--edge case where you want to keep the body marked after death is out of scope
 				--in this case, players should simply re-mark the body after death
 				--or i guess i could make a setting for that
@@ -87,12 +93,12 @@
 		-- use pd2 particle system?
 		
 	--BUGS
-		-- better input blocking, eg. when chat is open
 		--TimerManager:game():time() between client and host is desynced; use a different timer
 		--QuickChat detects controller mode if a controller is plugged in, even if keyboard is the "main" input
 		--character unit waypoints are in an unexpected place; move above head instead
 			--probably involves differently sized waypoint panels
 		--SWAT turrets have their target unit body detected incorrectly; waypoint is visually offset from the perceived turret core as a result
+			-- not sure how to resolve this. it'd have to be case-specific unit->tweaktable:body lookups and i really don't wanna do that
 		--known issue: discrepancies in max waypoint count between players may cause unexpected behavior
 			--waypoint limits are only enforced locally, so a client with a higher count may see other players' waypoints linger
 			--waypoint limit is now set at 1 globally, with no setting; consider this resolved
@@ -120,6 +126,7 @@ QuickChat.default_settings = {
 	compatibility_gcw_enabled = true,
 	radial_deadzone = 72,
 	radial_size = 300,
+	waypoints_auto_icon = true, -- if true, neutral pings will automatically determine the icon+label
 	waypoints_alert_on_registration = true,
 	--waypoints_max_count = 1, --deprecated
 	waypoints_acknowledge_sound_enabled = true,
@@ -140,6 +147,7 @@ QuickChat.sort_settings = {
 	"compatibility_gcw_enabled",
 	"radial_deadzone",
 	"radial_size",
+	"waypoints_auto_icon",
 	"waypoints_alert_on_registration",
 	--"waypoints_max_count",
 	"waypoints_ping_sound_enabled",
@@ -1611,6 +1619,10 @@ end
 
 function QuickChat:IsGCWCompatibilitySendEnabled()
 	return self.settings.compatibility_gcw_enabled
+end
+
+function QuickChat:IsWaypointAutoIconEnabled()
+	return self.settings.waypoints_auto_icon
 end
 
 -- if true, converts pings on non-interactable units (which would not be applicable for GCW "Attach" type waypoints) into static gcw position waypoints; this only applies to what is sent to the gcw user, not to the local user
