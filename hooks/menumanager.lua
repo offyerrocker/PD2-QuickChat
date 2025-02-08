@@ -2285,8 +2285,9 @@ end
 local tmp_camfrom_vec3 = Vector3()
 local tmp_camto_vec3 = Vector3()
 function QuickChat:AddWaypoint(params) --called whenever local player attempts to create a new waypoint
-	
-	
+	if GameStateFilters.any_end_game[game_state_machine:current_state_name()] then
+		return
+	end
 	local viewport_cam = managers.viewport:get_current_camera()
 	if not viewport_cam then 
 		--doesn't typically happen, usually for only a brief moment when all four players go into custody
