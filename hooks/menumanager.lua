@@ -1,8 +1,8 @@
 --TODO
 	-- validate incoming wps (no crashing)
 		-- enforce no-pinging-teammates from incoming pings, just in case
-		
-	-- send existing wps to new drop-in peers
+	
+	
 	
 	-- last selected radial item icon briefly floats from offscreen when hidden and re-shown
 	
@@ -3029,28 +3029,29 @@ function QuickChat:ReceiveGCWAttach(peer_id,message_string)
 	local qc_version,gcw_version = self:GetPeerVersion(peer_id)
 	if not qc_version then
 		self:RegisterGCWPeerById(peer_id,self.SYNC_TDLQGCW_VERSION)
-		local unit_id = self.to_int(message_body)
-		local unit
-		for _, _unit in ipairs(managers.interaction._interactive_units) do
-			if alive(_unit) and _unit:id() == unit_id then
-				unit = _unit
-				break
-			end
+	end
+	
+	local unit_id = self.to_int(message_body)
+	local unit
+	for _, _unit in ipairs(managers.interaction._interactive_units) do
+		if alive(_unit) and _unit:id() == unit_id then
+			unit = _unit
+			break
 		end
-		
-		if unit then
-			local position = Vector3() --shouldn't matter much for a unit waypoint
-			self:_AddWaypoint(peer_id,{
-				waypoint_type = self.WAYPOINT_TYPES.UNIT,
-				is_gcw = true,
-				label_index = nil,
-				icon_index = 168,
-				end_t = nil,
-				position = position,
-				unit_id = unit_id,
-				unit = unit
-			})
-		end
+	end
+	
+	if unit then
+		local position = Vector3() --shouldn't matter much for a unit waypoint
+		self:_AddWaypoint(peer_id,{
+			waypoint_type = self.WAYPOINT_TYPES.UNIT,
+			is_gcw = true,
+			label_index = nil,
+			icon_index = 168,
+			end_t = nil,
+			position = position,
+			unit_id = unit_id,
+			unit = unit
+		})
 	end
 end
 
@@ -3059,18 +3060,18 @@ function QuickChat:ReceiveGCWPlace(peer_id,message_string)
 	local qc_version,gcw_version = self:GetPeerVersion(peer_id)
 	if not qc_version then
 		self:RegisterGCWPeerById(peer_id,self.SYNC_TDLQGCW_VERSION)
-		if position then
-			self:_AddWaypoint(peer_id,{
-				waypoint_type = self.WAYPOINT_TYPES.POSITION,
-				is_gcw = true,
-				label_index = nil,
-				icon_index = 168,
-				end_t = nil,
-				position = position,
-				unit_id = unit_id,
-				unit = unit
-			})
-		end
+	end
+	if position then
+		self:_AddWaypoint(peer_id,{
+			waypoint_type = self.WAYPOINT_TYPES.POSITION,
+			is_gcw = true,
+			label_index = nil,
+			icon_index = 168,
+			end_t = nil,
+			position = position,
+			unit_id = unit_id,
+			unit = unit
+		})
 	end
 end
 
@@ -3078,8 +3079,8 @@ function QuickChat:ReceiveGCWRemove(peer_id,message_string)
 	local qc_version,gcw_version = self:GetPeerVersion(peer_id)
 	if not qc_version then
 		self:RegisterGCWPeerById(peer_id,self.SYNC_TDLQGCW_VERSION)
-		self:DisposeWaypoints(peer_id)
 	end
+	self:DisposeWaypoints(peer_id)
 end
 
 --gets the waypoint that the player is looking at, if any
