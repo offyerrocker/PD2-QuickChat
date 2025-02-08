@@ -1894,14 +1894,8 @@ function QuickChat:LoadCustomRadials() --read radial files from qc and user save
 	if self._lip then
 		local directory_exists = file_util.DirectoryExists
 		local file_exists = file_util.FileExists
-		local function get_files(path)
-			if SystemFS and SystemFS.list then 
-				return SystemFS:list(path)
-			else
-				return file_util.GetFiles(path)
-			end
-			--this should be alphabetized
-		end
+		local get_files = self.GetFiles 
+		
 		local function make_dir(path)
 			if SystemFS and SystemFS.make_dir then
 				local p
