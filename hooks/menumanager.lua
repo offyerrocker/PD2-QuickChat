@@ -2,10 +2,16 @@
 	-- validate incoming wps (no crashing)
 		-- enforce no-pinging-teammates from incoming pings, just in case
 	
+	-- slider for secondary sphere cast radius?
+	
+	-- don't mark security cameras that are disabled (eg if camera operator element is neutralized)
+	
 	--auto icon for units
 		--by interaction id; only in neutral ping
 		-- also with menu option
 	
+	-- lock/lockpick icon?
+	-- grenade case icon
 	
 	-- just hide waypoints on enter forbidden state and show them again on enter whitelisted state
 		-- don't jump through so many hoops 
@@ -214,6 +220,80 @@ QuickChat._synced_waypoints = {
 	{},{},{},{}
 }
 
+QuickChat._INTERACTION_ICONS = {
+	--atm_interaction,
+	first_aid_kit = "equipment_first_aid_kit",
+	ammo_bag = "equipment_ammo_bag",
+	doctor_bag = "equipment_doctor_bag",
+	bodybags_bag = "equipment_bodybags_bag",
+	trip_mine = "equipment_trip_mine",
+	sentry_gun = "equipment_sentry",
+	sentry_gun_fire_mode = "equipment_sentry",
+	grenade_briefcase = nil, -- closed grenade case
+	grenade_crate = nil, -- open grenade case
+	driving_drive = "pd2_car",
+	drill = "pd2_drill",
+	lance = "pd2_drill",
+	gen_pku_crowbar = "wp_crowbar",
+	press_printer_ink = "equipment_printer_ink",
+	press_plates = "equipment_plates", 
+	press_printer_paper = "equipment_paper_roll",
+	carry_drop = "pd2_loot", -- bag loot
+	hold_take_counterfeit_money = "pd2_loot",
+	hold_take_painting = "pd2_loot",
+	painting_carry_drop = "pd2_loot",
+	gen_pku_evidence_bag = "pd2_loot",
+	money_wrap = "pd2_loot",
+	diamonds_pickup = "pd2_loot",
+	pku_gold = "pd2_loot",
+	disassemble_turret = "pd2_loot",
+	bag_zipline = "pd2_lootdrop",
+	gen_int_saw = "pd2_generic_saw",
+	gen_int_saw_jammed = "pd2_generic_saw",
+	gen_pku_saw = "pd2_generic_saw",
+	corpse_dispose = "equipment_bodybags_bag",
+	place_harddrive = "equipment_harddrive",
+	pickup_harddrive = "equipment_harddrive",
+	access_camera_x_axis = "qc_security_camera",
+	access_camera_y_axis = "qc_security_camera",
+	access_camera = "qc_security_camera",
+	sc_tape_loop = "qc_security_camera", -- security camera tape loop (should be applicable to all cameras)
+	-- push_button
+	-- sewer_manhole
+	-- hold_search_toilet
+	c4 = "pd2_c4",
+	c4_bag = "pd2_c4",
+	c4_consume = "pd2_c4",
+	cut_glass = "equipment_glasscutter",
+	stash_planks_pickup = "equipment_planks",
+	apply_thermite_paste_no_consume = "equipment_thermite",
+	gen_pku_thermite = "equipment_thermite",
+	requires_ecm_jammer_atm = "equipment_ecm_jammer",
+	hold_take_medallion = nil,
+	-- crate_loot_crowbar = 40,
+	-- suburbia_iron_gate_crowbar = 40,
+	-- interaction_ball -- counterfeit hose
+	-- water_tap -- water hose start
+	-- hold_start_printer
+	cas_screw_down = nil,
+	cas_take_hook = "equipment_winch_hook",
+	-- cas_button_0 - cas_button_09, cas_button_enter, cas_button_clear
+	brb_connect_winch_hook = "equipment_winch_hook",
+	cas_start_winch = nil,
+	shaped_sharge = "equipment_c4", -- no that's not a typo, it is called "shaped_sharge" 
+	dah_panicroom_keycard = "equipment_bank_manager_key",
+	timelock_panel = "equipment_bank_manager_key",
+	pickup_keycard = "equipment_bank_manager_key",
+	key = "equipment_bank_manager_key", -- keycard reader
+	tag_take_stapler = "equipment_stapler",
+	press_place_stapler = "equipment_stapler",
+	money_wrap_single_bundle = "qc_loose_cash",
+	interact_gen_pku_loot_take = "qc_loose_cash",
+	diamond_pickup_pal = "qc_loose_cash",
+	diamond_pickup = "qc_loose_cash"
+}
+
+-- supergroup of icons from various sources
 QuickChat._icon_presets_by_index = {
 	{
 		source = 1,
@@ -245,7 +325,7 @@ QuickChat._icon_presets_by_index = {
 	},
 	{
 		source = 1,
-		icon_id = "pd2_c4" --8
+		icon_id = "pd2_c4" --8 (identical to 39)
 	},
 	{
 		source = 1,
@@ -369,7 +449,7 @@ QuickChat._icon_presets_by_index = {
 	},
 	{
 		source = 1,
-		icon_id = "wp_c4" --39
+		icon_id = "wp_c4" --39 (identical to 8)
 	},
 	{
 		source = 1,
@@ -377,7 +457,7 @@ QuickChat._icon_presets_by_index = {
 	},
 	{
 		source = 1,
-		icon_id = "wp_planks" --41
+		icon_id = "wp_planks" --41 -- identical to 74
 	},
 	{
 		source = 1,
@@ -481,7 +561,7 @@ QuickChat._icon_presets_by_index = {
 	},
 	{
 		source = 1,
-		icon_id = "equipment_cutter" --67
+		icon_id = "equipment_glasscutter" --67 -- not to be confused with equipment_cutter
 	},
 	{
 		source = 1,
@@ -509,7 +589,7 @@ QuickChat._icon_presets_by_index = {
 	},
 	{
 		source = 1,
-		icon_id = "equipment_planks" --74
+		icon_id = "equipment_planks" --74 -- identical to 41
 	},
 	{
 		source = 1,
@@ -820,147 +900,147 @@ QuickChat._icon_presets_by_index = {
 		icon_id = "equipment_hydrogen_chloride" --151
 	},
 	{
-		name = "qc_ps_circle",
+		name = "qc_ps_circle", --152
 		source = 2, --circle outline (ps button style)
-		texture = "guis/textures/pd2/quickchatmod/waypoint_icons_atlas", --152
+		texture = "guis/textures/pd2/quickchatmod/waypoint_icons_atlas",
 		texture_rect = {
 			0,0,
-			32,32
+			64,64
 		}
 	},
 	{
-		name = "qc_ps_square",
+		name = "qc_ps_square", --153
 		source = 2, --square outline (ps button style)
-		texture = "guis/textures/pd2/quickchatmod/waypoint_icons_atlas", --153
+		texture = "guis/textures/pd2/quickchatmod/waypoint_icons_atlas",
 		texture_rect = {
-			1 * 32,0 * 32,
-			32,32
+			1 * 64,0 * 64,
+			64,64
 		}
 	},
 	{
-		name = "qc_ps_x",
+		name = "qc_ps_x", --154
 		source = 2, --x (ps button style)
-		texture = "guis/textures/pd2/quickchatmod/waypoint_icons_atlas", --154
+		texture = "guis/textures/pd2/quickchatmod/waypoint_icons_atlas",
 		texture_rect = {
-			2 * 32,0 * 32,
-			32,32
+			2 * 64,0 * 64,
+			64,64
 		}
 	},
 	{
-		name = "qc_ps_triangle",
+		name = "qc_ps_triangle", --155
 		source = 2, --triangle (ps button style)
-		texture = "guis/textures/pd2/quickchatmod/waypoint_icons_atlas", --155
+		texture = "guis/textures/pd2/quickchatmod/waypoint_icons_atlas",
 		texture_rect = {
-			3 * 32,0 * 32,
-			32,32
+			3 * 64,0 * 64,
+			64,64
 		}
 	},
 	{
-		name = "qc_numeral_1",
+		name = "qc_numeral_1", --156
 		source = 2, --number "1"
-		texture = "guis/textures/pd2/quickchatmod/waypoint_icons_atlas", --156
+		texture = "guis/textures/pd2/quickchatmod/waypoint_icons_atlas",
 		texture_rect = {
-			0 * 32,1 * 32,
-			32,32
+			0 * 64,1 * 64,
+			64,64
 		}
 	},
 	{
-		name = "qc_numeral_2",
+		name = "qc_numeral_2", --157
 		source = 2, --number "2"
-		texture = "guis/textures/pd2/quickchatmod/waypoint_icons_atlas", --157
+		texture = "guis/textures/pd2/quickchatmod/waypoint_icons_atlas",
 		texture_rect = {
-			0 * 32,1 * 32,
-			32,32
+			0 * 64,1 * 64,
+			64,64
 		}
 	},
 	{
-		name = "qc_numeral_3",
+		name = "qc_numeral_3", --158
 		source = 2, --number "3"
-		texture = "guis/textures/pd2/quickchatmod/waypoint_icons_atlas", --158
+		texture = "guis/textures/pd2/quickchatmod/waypoint_icons_atlas",
 		texture_rect = {
-			0 * 32,1 * 32,
-			32,32
+			0 * 64,1 * 64,
+			64,64
 		}
 	},
 	{
-		name = "qc_numeral_4",
+		name = "qc_numeral_4", --159
 		source = 2, --number "4"
-		texture = "guis/textures/pd2/quickchatmod/waypoint_icons_atlas", --159
+		texture = "guis/textures/pd2/quickchatmod/waypoint_icons_atlas",
 		texture_rect = {
-			0 * 32,1 * 32,
-			32,32
+			0 * 64,1 * 64,
+			64,64
 		}
 	},
 	{
-		name = "qc_letter_a",
+		name = "qc_letter_a", --160
 		source = 2, --capital letter "A"
-		texture = "guis/textures/pd2/quickchatmod/waypoint_icons_atlas", --160
+		texture = "guis/textures/pd2/quickchatmod/waypoint_icons_atlas",
 		texture_rect = {
-			0 * 32,2 * 32,
-			32,32
+			0 * 64,2 * 64,
+			64,64
 		}
 	},
 	{
-		name = "qc_letter_b",
+		name = "qc_letter_b", --161
 		source = 2, --capital letter "B"
-		texture = "guis/textures/pd2/quickchatmod/waypoint_icons_atlas", --161
+		texture = "guis/textures/pd2/quickchatmod/waypoint_icons_atlas",
 		texture_rect = {
-			1 * 32,2 * 32,
-			32,32
+			1 * 64,2 * 64,
+			64,64
 		}
 	},
 	{
-		name = "qc_letter_c",
+		name = "qc_letter_c", --162
 		source = 2, --capital letter "C"
-		texture = "guis/textures/pd2/quickchatmod/waypoint_icons_atlas", --162
+		texture = "guis/textures/pd2/quickchatmod/waypoint_icons_atlas",
 		texture_rect = {
-			2 * 32,2 * 32,
-			32,32
+			2 * 64,2 * 64,
+			64,64
 		}
 	},
 	{
-		name = "qc_letter_d",
+		name = "qc_letter_d", --163
 		source = 2, --capital letter "D"
-		texture = "guis/textures/pd2/quickchatmod/waypoint_icons_atlas", --163
+		texture = "guis/textures/pd2/quickchatmod/waypoint_icons_atlas",
 		texture_rect = {
-			3 * 32,2 * 32,
-			32,32
+			3 * 64,2 * 64,
+			64,64
 		}
 	},
 	{
-		name = "qc_letter_e",
-		source = 2, --capital letter "E"
-		texture = "guis/textures/pd2/quickchatmod/waypoint_icons_atlas", --164
+		name = "qc_loose_cash",  --164
+		source = 2, -- single dollar bill icon
+		texture = "guis/textures/pd2/quickchatmod/waypoint_icons_atlas",
 		texture_rect = {
-			0 * 32,3 * 32,
-			32,32
+			0 * 64,3 * 64,
+			64,64
 		}
 	},
 	{
-		name = "qc_letter_f",
-		source = 2, --capital letter "F"
-		texture = "guis/textures/pd2/quickchatmod/waypoint_icons_atlas", --165
+		name = "qc_security_camera", --165
+		source = 2, -- security camera icon
+		texture = "guis/textures/pd2/quickchatmod/waypoint_icons_atlas",
 		texture_rect = {
-			1 * 32,3 * 32,
-			32,32
+			1 * 64,3 * 64,
+			64,64
 		}
 	},
 	{
-		name = "qc_do_not",
+		name = "qc_avoid",  --166
 		source = 2, --"do not" symbol (circle bisected with diagonal line)
-		texture = "guis/textures/pd2/quickchatmod/waypoint_icons_atlas", --166
+		texture = "guis/textures/pd2/quickchatmod/waypoint_icons_atlas",
 		texture_rect = {
-			2 * 32,3 * 32,
-			32,32
+			2 * 64,3 * 64,
+			64,64
 		}
 	},
 	{
-		name = "qc_checkmark",
+		name = "qc_checkmark", --167
 		source = 2, --checkmark symbol
-		texture = "guis/textures/pd2/quickchatmod/waypoint_icons_atlas", --167
+		texture = "guis/textures/pd2/quickchatmod/waypoint_icons_atlas",
 		texture_rect = {
-			3 * 32,3 * 32,
-			32,32
+			3 * 64,3 * 64,
+			64,64
 		}
 	},
 	{
@@ -973,8 +1053,24 @@ QuickChat._icon_presets_by_index = {
 	},
 	{
 		source = 1,
-		icon_id = "debug_equipment_bodybags_bag" --170
+		icon_id = "equipment_bodybags_bag" --170 
+	},
+	{
+		source = 1,
+		icon_id = "pd2_car" --171
 	}
+	--[[
+	,
+	{
+		name = "qc_locked", --173
+		source = 2, --checkmark symbol
+		texture = "guis/textures/pd2/quickchatmod/waypoint_icons_atlas",
+		texture_rect = {
+			3 * 32,3 * 32,
+			32,32
+		}
+	}
+	--]]
 }
 QuickChat._icon_presets_by_name = {}
 for index,data in ipairs(QuickChat._icon_presets_by_index) do
@@ -1200,7 +1296,6 @@ QuickChat._callback_bind_button = nil --dynamically set
 QuickChat._updaters = {}
 QuickChat._is_binding_listener_active = nil -- flag that blocks radial wheels from opening while binding window is active
 
-
 QuickChat.MENU_IDS = {
 	MENU_MAIN = "quickchat_menu_main",
 	MENU_BINDS = "quickchat_menu_binds",
@@ -1349,7 +1444,7 @@ function QuickChat.find_interactable(unit)
 			--must be active and currently interactable
 		
 --				self:Log("active=" .. tostring(unit:interaction()._active) .. ",disabled=".. tostring(unit:interaction()._disabled))
-			return unit
+			return unit,interaction_ext.tweak_data
 		end
 	end
 end
@@ -1359,7 +1454,9 @@ function QuickChat.find_character(unit,no_recursion)
 		if not no_recursion and unit:in_slot(8) and unit.parent and unit:parent() then 
 			return QuickChat.find_character(unit:parent(),true)
 		elseif unit.character_damage and unit:character_damage() then
-			return unit
+			local unit_base = unit:base()
+			local tweak_table = unit_base and unit_base._tweak_table
+			return unit,tweak_table
 --		elseif unit:parent() and alive(unit:parent():base()) and unit:parent():base().tweak_table then 
 		end
 	end
@@ -1560,6 +1657,35 @@ function QuickChat:GetIconDataByIndex(icon_index)
 			end
 		end
 	end
+end
+
+function QuickChat:GetIconIndexFromInteractionId(interaction_id)
+	--[[
+	local interaction_ext = alive(unit) and unit:interaction()
+	if interaction_ext and interaction_ext._special_equipment then
+		local equipment_td = tweak_data.equipment.specials[interaction_ext._special_equipment]
+		local icon = equipment_td and equipment_td.icon
+		icon_index = icon and self._icon_presets_by_name[icon]
+		if icon_index then
+			return icon_index
+		end
+	end
+	--]]
+	
+	local icon_index = self:GetIconIndexFromId(self._INTERACTION_ICONS[interaction_id])
+	if icon_index then
+		return icon_index
+	end
+	local interaction_td = interaction_id and tweak_data.interaction[interaction_id]
+	if interaction_td and interaction_td.is_lockpicking then
+		return self:GetIconIndexFromId("equipment_key_chain" or "qc_wp_locked")
+	end
+	
+	return self:GetIconIndexFromId("pd2_generic_interact")
+end
+
+function QuickChat:GetIconIndexFromId(icon_id)
+	return icon_id and self._icon_presets_by_name[icon_id]
 end
 
 function QuickChat:GetIconDataByName(name)
@@ -2311,6 +2437,7 @@ function QuickChat:AddWaypoint(params) --called whenever local player attempts t
 	local peer_id = session:local_peer():id()
 	params = params or {}
 	local is_neutral_ping = params.is_neutral_ping
+	local is_auto_icon = is_neutral_ping and self:IsWaypointAutoIconEnabled()
 	
 	local dot_aim_threshold = self:GetWaypointAimDotThreshold()
 	local aimed_index,aimed_peerid,aimed_wp_data = self:GetAimedWaypoint(true,dot_aim_threshold,"all",nil)
@@ -2364,7 +2491,7 @@ function QuickChat:AddWaypoint(params) --called whenever local player attempts t
 			brush:line(tmp_camfrom_vec3,raycast.position,10)
 		end
 		local position = raycast.position
-		local unit_result
+		local unit_result,interaction_tweak_id,unit_tweak_id
 		local unit = raycast.unit
 		local end_t
 		if params.timer and params.timer > 0 then
@@ -2376,13 +2503,21 @@ function QuickChat:AddWaypoint(params) --called whenever local player attempts t
 		elseif params.label_id then
 			label_index = self._label_presets_by_name[params.label_id] or label_index
 		end
+		local label_text -- non-localized, non-synced direct label text, for edge cases and enemy unit names
+		local icon_index = 0
+		local is_interaction
 		
 		local find_interactable = self.find_interactable
 		local find_character = self.find_character
 		
 		if unit then
 			if unit and alive(unit) then 
-				unit_result = find_character(unit) or find_interactable(unit)
+				unit_result,unit_tweak_id = find_character(unit,false) 
+				if not unit_result then
+					unit_tweak_id = nil
+					unit_result,interaction_tweak_id = find_interactable(unit)
+					is_interaction = unit_result and true or false
+				end
 				
 				if debug_draw_enabled then
 					local oobb = unit:oobb()
@@ -2418,12 +2553,25 @@ function QuickChat:AddWaypoint(params) --called whenever local player attempts t
 		
 		if not unit_result then
 			--do secondary sphere cast to catch interactables specifically
-			local spherecast = World:find_units_quick("sphere",position,self.WAYPOINT_SECONDARY_CAST_RADIUS,self._waypoint_target_slotmask)
+			local spherecast = World:find_units_quick("sphere",position,self.WAYPOINT_SECONDARY_CAST_RADIUS,self._waypoint_target_slotmask,"ignore_unit",ignore_units)
+			local tmp_unit_result
 			for _,_unit in ipairs(spherecast) do 
 				--secondary (spherecast) targets should prioritize objects instead of people
-				local found_interactable = find_interactable(_unit) or find_character(unit)
-				if found_interactable then
-					unit_result = found_interactable
+				interaction_tweak_id = nil
+				unit_tweak_id = nil
+				-- if unit_result:base().security_camera == true then
+					-- icon_index = self:GetIconIndexFromId("qc_security_camera")
+				-- end
+				tmp_unit_result,interaction_tweak_id = find_interactable(_unit)
+				if tmp_unit_result then
+					is_interaction = true
+					unit_result = tmp_unit_result
+					break
+				end
+				
+				tmp_unit_result,unit_tweak_id = find_character(unit,false)
+				if tmp_unit_result then
+					unit_result = tmp_unit_result
 					break
 				end
 			end
@@ -2433,66 +2581,92 @@ function QuickChat:AddWaypoint(params) --called whenever local player attempts t
 		
 		local waypoint_type
 		local _unit_id,unit_id
-		if alive(unit_result) then
-
-			for i,waypoint_data in ipairs(self._synced_waypoints[peer_id]) do 
-				if waypoint_data.unit == unit_result then
-					--if the local player tags the same unit, 
-					--just remove the waypoint instead
-					self:RemoveWaypoint(i)
-					return
-				end
-			end
-			
+		local alive_unit_result = alive(unit_result)
+		if alive_unit_result then
 			--check if valid unit
 			_unit_id = unit_result:id()
-		end
-		if _unit_id and _unit_id > 0 then	
-			--attach waypoint to unit
-			waypoint_type = self.WAYPOINT_TYPES.UNIT
-			unit_id = _unit_id
-			
-						
-			-- if gcw compat is enabled,
-			-- only send a unit ("Attach") type waypoint if the unit is "interactable"
-			-- since gcw only supports unit waypoints on interactable units
-			if self:IsGCWCompatibilitySendEnabled() and self:UseGCWUnitPingResolution() then
-				for _,unit in ipairs(managers.interaction._interactive_units) do 
-					if unit:id() == _unit_id then
-						is_gcw_interactable_unit = true
-						break
+			if _unit_id and _unit_id > 0 then	
+				--attach waypoint to unit
+				waypoint_type = self.WAYPOINT_TYPES.UNIT
+				unit_id = _unit_id
+				
+				-- if gcw compat is enabled,
+				-- only send a unit ("Attach") type waypoint if the unit is "interactable"
+				-- since gcw only supports unit waypoints on interactable units
+				if self:IsGCWCompatibilitySendEnabled() and self:UseGCWUnitPingResolution() then
+					for _,unit in ipairs(managers.interaction._interactive_units) do 
+						if unit:id() == _unit_id then
+							is_gcw_interactable_unit = true
+							break
+						end
 					end
 				end
+			else
+				-- unit has no network component; create waypoint at position instead
+				waypoint_type = self.WAYPOINT_TYPES.POSITION
 			end
 		else
-			--create waypoint at position
+			-- no unit found
 			waypoint_type = self.WAYPOINT_TYPES.POSITION
 		end
 		
-		
-		local icon_index = 0
-		if params.icon then
-			icon_index = self._icon_presets_by_name[params.icon] or icon_index
-		elseif params.icon_index then
-			icon_index = params.icon_index or icon_index
-		elseif is_neutral_ping then
-			if unit_result then
---				icon_index = 6
+		if is_auto_icon and (interaction_tweak_id or unit_tweak_id) then
+			if interaction_tweak_id then
+				icon_index = self:GetIconIndexFromInteractionId(interaction_tweak_id)
+				is_interaction = icon_index and true or false
+			else
+				if unit_tweak_id then
+					local e_m = managers.enemy
+					if e_m:is_civilian(unit_result) then
+						icon_index = self:GetIconIndexFromId("equipment_cable_ties")
+					elseif e_m:is_enemy(unit_result) then
+						local group_ai_state = managers.groupai:state()
+						if group_ai_state then 
+							local dmg_ext = unit_result:character_damage()
+							if dmg_ext:dead() and group_ai_state:whisper_mode() then
+								icon_index = self:GetIconIndexFromId("pd2_bodybag")
+							elseif group_ai_state:is_enemy_converted_to_criminal(unit_result) then
+								icon_index = self:GetIconIndexFromId("qc_avoid")
+							else
+								-- check to see if team is friendly
+								if dmg_ext:is_friendly_fire(managers.player:local_player()) then
+									icon_index = self:GetIconIndexFromId("qc_avoid")
+								else
+									icon_index = self:GetIconIndexFromId("pd2_kill")
+								end
+							end
+						end
+					end
+					
+					-- set manual label text here
+					label_text = self:GetCharacterName(unit_tweak_id)
+				end
 			end
-		--[[
-			--todo determine fallback icon if is neutral ping and unit was pinged
-			if unit_type == "interaction" then
-				icon_index = 18 -- pd2_generic_interact
-			elseif unit_result then
-				icon_index = 6 -- pd2_generic_look (exclaimation point)
+		else
+			if params.icon then
+				icon_index = self._icon_presets_by_name[params.icon] or icon_index
+			elseif params.icon_index then
+				icon_index = params.icon_index or icon_index
+			elseif is_auto_icon and alive_unit_result then
+				if unit_result:in_slot(managers.slot:get_mask("sentry_gun")) then
+					local dmg_ext = unit_result and unit_result:character_damage()
+					if dmg_ext then
+						local player = managers.player:local_player()
+						if (dmg_ext.is_friendly_fire and dmg_ext:is_friendly_fire(player)) or PlayerDamage.is_friendly_fire(dmg_ext,player) then
+							icon_index = self:GetIconIndexFromId("equipment_sentry")
+						else
+							icon_index = self:GetIconIndexFromId("wp_sentry")
+						end
+					end
+				end
 			end
-			--]]
 		end
 		
 		
 		local waypoint_data = {
 			waypoint_type = waypoint_type,
 			icon_index = icon_index,
+			label_text = label_text,
 			label_index = label_index,
 			start_t = TimerManager:game():time(),
 			end_t = end_t,
@@ -2500,6 +2674,7 @@ function QuickChat:AddWaypoint(params) --called whenever local player attempts t
 			unit_id = unit_id,
 			unit = unit_result,
 			is_neutral_ping = is_neutral_ping,
+			is_interaction = is_interaction, -- allows checking it during update loop to see if interaction is now inactive
 			is_gcw_interactable_unit = is_gcw_interactable_unit
 		}
 		
@@ -2808,7 +2983,7 @@ function QuickChat:_AddWaypoint(peer_id,waypoint_data) --called for both local p
 		local texture,texture_rect = self:GetIconDataByIndex(icon_index)
 		local icon_visible = texture and true or false
 		local label_id = label_index and self._label_presets_by_index[label_index]
-		local label_text = label_id and managers.localization:text(label_id)
+		local label_text = waypoint_data.label_text or label_id and managers.localization:text(label_id)
 		
 		local icon_size = self.WAYPOINT_ICON_SIZE
 		local arrow_size = self.WAYPOINT_ARROW_ICON_SIZE
@@ -2913,6 +3088,7 @@ function QuickChat:_AddWaypoint(peer_id,waypoint_data) --called for both local p
 			desc = desc,
 			arrow = arrow,
 			arrow_ghost = arrow_ghost,
+			is_interaction = waypoint_data.is_interaction,
 			start_t = waypoint_data.start_t or TimerManager:game():time(),
 			end_t = end_t,
 			state = "onscreen",
@@ -3265,6 +3441,15 @@ function QuickChat:FindWaypoint(data,filter_peerids,filter_wp_func)
 		wp_index,wp_data = find_waypoints(waypoints)
 	end
 	return wp_index,wp_peer_id,wp_data
+end
+
+function QuickChat:GetCharacterName(unit_name_id)
+	if HopLib then
+		local name_provider = HopLib:name_provider()
+		if name_provider then
+			return name_provider:name_by_id(unit_name_id)
+		end
+	end
 end
 
 --Voicelines/Gestures
@@ -3725,7 +3910,22 @@ function QuickChat:UpdateWaypoints(t,dt)
 				if waypoint_type == self.WAYPOINT_TYPES.UNIT then
 					local unit = waypoint_data.unit
 					if alive(unit) then
-						wp_position = get_unit_waypoint_position(unit,waypoint_data.unit_object) or wp_position
+						if waypoint_data.is_interaction then
+							local interaction_ext = unit:interaction()
+							if interaction_ext then
+								if interaction_ext:disabled() or not interaction_ext:active() then -- or not interaction_ext:can_interact() 
+									is_valid = false
+								else
+									-- is_valid = true -- yay
+								end
+							else
+								is_valid = false
+							end
+						end
+						
+						if is_valid then
+							wp_position = get_unit_waypoint_position(unit,waypoint_data.unit_object) or wp_position
+						end
 					else
 						--unit despawned or otherwise invalid
 						is_valid = false
