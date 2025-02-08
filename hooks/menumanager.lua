@@ -4385,7 +4385,7 @@ Hooks:Add("MenuManagerPopulateCustomMenus","QuickChat_MenuManagerPopulateCustomM
 	
 	local parent_menu_id = QuickChat.MENU_IDS.MENU_BINDS
 	
-	local final_items = {}
+	local binding_items = {}
 	
 	local function add_binding_button(data)
 		local id = tostring(data.id)
@@ -4397,7 +4397,7 @@ Hooks:Add("MenuManagerPopulateCustomMenus","QuickChat_MenuManagerPopulateCustomM
 		local button_desc = data.button_desc
 		local callback_id = "callback_qc_menu_bind_button_" .. id
 		local divider_id = "qc_menu_divider_" .. id
-		table.insert(final_items,1,{ --header button
+		table.insert(binding_items,#binding_items+1,{ --header button
 			type = "button",
 			id = header_id,
 			title = header_title,
@@ -4407,7 +4407,7 @@ Hooks:Add("MenuManagerPopulateCustomMenus","QuickChat_MenuManagerPopulateCustomM
 			menu_id = data.parent_menu_id,
 			disabled = true
 		})
-		table.insert(final_items,1,{ --bind button
+		table.insert(binding_items,#binding_items+1,{ --bind button
 			type = "button",
 			id = button_id,
 			title = button_title,
@@ -4417,7 +4417,7 @@ Hooks:Add("MenuManagerPopulateCustomMenus","QuickChat_MenuManagerPopulateCustomM
 			menu_id = data.parent_menu_id,
 			disabled = false
 		})
-		table.insert(final_items,1,{ --divider
+		table.insert(binding_items,#binding_items+1,{ --divider
 			type = "divider",
 			id = divider_id,
 			size = 16,
@@ -4634,7 +4634,7 @@ Hooks:Add("MenuManagerPopulateCustomMenus","QuickChat_MenuManagerPopulateCustomM
 	end
 	
 	
-	do
+	do -- quick ping bind
 		local current_binding_text
 		local current_button,current_is_mouse_button = QuickChat:GetButtonByAction("quick_ping","")
 		if current_button then
@@ -4654,8 +4654,7 @@ Hooks:Add("MenuManagerPopulateCustomMenus","QuickChat_MenuManagerPopulateCustomM
 		})
 	end
 	
-	
-	do
+	do -- clear own waypoints bind
 		local current_binding_text
 		local current_button,current_is_mouse_button = QuickChat:GetButtonByAction("waypoints_clear_own","")
 		if current_button then
@@ -4675,7 +4674,7 @@ Hooks:Add("MenuManagerPopulateCustomMenus","QuickChat_MenuManagerPopulateCustomM
 		})
 	end
 		
-	do
+	do -- clear all waypoints bind
 		local current_binding_text
 		local current_button,current_is_mouse_button = QuickChat:GetButtonByAction("waypoints_clear_all","")
 		if current_button then
@@ -4843,149 +4842,21 @@ Hooks:Add("MenuManagerPopulateCustomMenus","QuickChat_MenuManagerPopulateCustomM
 	end
 	
 	
-	local settings_items = {
+	local settings_items = { -- block of items that (mostly) need callbacks generated
 		{
-			type = "multiple_choice",
-			id = "qc_menu_user_language",
-			title = "qc_menu_user_language_title",
-			desc = "qc_menu_user_language_title_desc",
-			items = table.deep_map_copy(lang_items),
-			callback = user_lang_callback_id,
-			skip_callback = true,
-			value_raw = selected_lang_index,
-			value_type = "number"
+			type = "toggle",
+			id = "menu_waypoints_alert_on_registration",
+			title = "qc_menu_waypoints_alert_on_registration_title",
+			desc = "qc_menu_waypoints_alert_on_registration_desc",
+			value = "waypoints_alert_on_registration",
+			skip_callback = false,
+			value_type = "boolean"
 		},
 		{
 			type = "divider",
-			id = "menu_waypoints_lang_divider",
+			id = "menu_waypoints_handshake_divider",
 			size = 8,
 			skip_callback = true
-		},
-		{
-			type = "toggle",
-			id = "menu_waypoints_ping_sound_enabled",
-			title = "qc_menu_waypoints_ping_sound_enabled_title",
-			desc = "qc_menu_waypoints_ping_sound_enabled_desc",
-			value = "waypoints_ping_sound_enabled",
-			skip_callback = false,
-			value_type = "boolean"
-		},
-		{
-			type = "slider",
-			id = "menu_waypoints_ping_sound_volume",
-			title = "qc_menu_waypoints_generic_sound_volume_title",
-			desc = "qc_menu_waypoints_generic_sound_volume_desc",
-			value = "waypoints_ping_sound_volume",
-			min = 0,
-			max = 1,
-			step = 0.1,
-			show_value = true,
-			skip_callback = false,
-			value_type = "number"
-		},
-		{
-			type = "multiple_choice",
-			id = "menu_waypoints_ping_sound_id",
-			title = "qc_menu_waypoints_generic_sound_id_title",
-			desc = "qc_menu_waypoints_generic_sound_id_desc",
-			items = table.deep_map_copy(sound_items),
-			callback = ping_sound_callback_id,
-			skip_callback = true,
-			value_raw = ping_sound_index,
-			value_type = "number"
-		},
-		{
-			type = "divider",
-			id = "menu_waypoints_ack_divider",
-			size = 8,
-			skip_callback = true
-		},
-		{
-			type = "toggle",
-			id = "menu_waypoints_unacknowledge_sound_enabled",
-			title = "qc_menu_waypoints_unacknowledge_sound_enabled_title",
-			desc = "qc_menu_waypoints_unacknowledge_sound_enabled_desc",
-			value = "waypoints_unacknowledge_sound_enabled",
-			skip_callback = false,
-			value_type = "boolean"
-		},
-		{
-			type = "slider",
-			id = "menu_waypoints_unacknowledge_sound_volume",
-			title = "qc_menu_waypoints_generic_sound_volume_title",
-			desc = "qc_menu_waypoints_generic_sound_volume_desc",
-			value = "waypoints_unacknowledge_sound_volume",
-			min = 0,
-			max = 1,
-			step = 0.1,
-			show_value = true,
-			skip_callback = false,
-			value_type = "number"
-		},
-		{
-			type = "multiple_choice",
-			id = "menu_waypoints_unacknowledge_sound_id",
-			title = "qc_menu_waypoints_generic_sound_id_title",
-			desc = "qc_menu_waypoints_generic_sound_id_desc",
-			items = table.deep_map_copy(sound_items),
-			callback = unacknowledge_sound_callback_id,
-			skip_callback = true,
-			value_raw = unacknowledge_sound_index,
-			value_type = "number"
-		},
-		{
-			type = "divider",
-			id = "menu_waypoints_unack_divider",
-			size = 8,
-			skip_callback = true
-		},
-		{
-			type = "toggle",
-			id = "menu_waypoints_acknowledged_sound_enabled",
-			title = "qc_menu_waypoints_acknowledged_sound_enabled_title",
-			desc = "qc_menu_waypoints_acknowledged_sound_enabled_desc",
-			value = "waypoints_acknowledge_sound_enabled",
-			skip_callback = false,
-			value_type = "boolean"
-		},
-		{
-			type = "slider",
-			id = "menu_waypoints_acknowledge_sound_volume",
-			title = "qc_menu_waypoints_generic_sound_volume_title",
-			desc = "qc_menu_waypoints_generic_sound_volume_desc",
-			value = "waypoints_acknowledge_sound_volume",
-			min = 0,
-			max = 1,
-			step = 0.1,
-			show_value = true,
-			skip_callback = false,
-			value_type = "number"
-		},
-		{
-			type = "multiple_choice",
-			id = "menu_waypoints_acknowledge_sound_id",
-			title = "qc_menu_waypoints_generic_sound_id_title",
-			desc = "qc_menu_waypoints_generic_sound_id_desc",
-			items = table.deep_map_copy(sound_items),
-			callback = acknowledge_sound_callback_id,
-			skip_callback = true,
-			value_raw = acknowledge_sound_index,
-			value_type = "number"
-		},
-		{
-			type = "divider",
-			id = "menu_waypoints_snd_divider",
-			size = 16,
-			skip_callback = true
-		},
-		{
-			type = "toggle",
-			id = "menu_debug_logs_enabled",
-			title = "qc_menu_debug_logs_enabled_title",
-			desc = "qc_menu_debug_logs_enabled_desc",
-			value = "debug_draw",
-			skip_callback = false,
-			value_type = "boolean"
 		},
 		{
 			type = "toggle",
@@ -4997,13 +4868,10 @@ Hooks:Add("MenuManagerPopulateCustomMenus","QuickChat_MenuManagerPopulateCustomM
 			value_type = "boolean"
 		},
 		{
-			type = "toggle",
-			id = "menu_waypoints_alert_on_registration",
-			title = "qc_menu_waypoints_alert_on_registration_title",
-			desc = "qc_menu_waypoints_alert_on_registration_desc",
-			value = "waypoints_alert_on_registration",
-			skip_callback = false,
-			value_type = "boolean"
+			type = "divider",
+			id = "menu_waypoints_handshake_divider",
+			size = 8,
+			skip_callback = true
 		},
 		--[[
 		{
@@ -5067,10 +4935,160 @@ Hooks:Add("MenuManagerPopulateCustomMenus","QuickChat_MenuManagerPopulateCustomM
 			show_value = true,
 			skip_callback = false,
 			value_type = "number"
+		},
+		{
+			type = "divider",
+			id = "menu_waypoints_attenuate_divider",
+			size = 16,
+			skip_callback = true
+		},
+		{
+			type = "toggle",
+			id = "menu_waypoints_ping_sound_enabled",
+			title = "qc_menu_waypoints_ping_sound_enabled_title",
+			desc = "qc_menu_waypoints_ping_sound_enabled_desc",
+			value = "waypoints_ping_sound_enabled",
+			skip_callback = false,
+			value_type = "boolean"
+		},
+		{
+			type = "slider",
+			id = "menu_waypoints_ping_sound_volume",
+			title = "qc_menu_waypoints_generic_sound_volume_title",
+			desc = "qc_menu_waypoints_generic_sound_volume_desc",
+			value = "waypoints_ping_sound_volume",
+			min = 0,
+			max = 1,
+			step = 0.1,
+			show_value = true,
+			skip_callback = false,
+			value_type = "number"
+		},
+		{
+			type = "multiple_choice",
+			id = "menu_waypoints_ping_sound_id",
+			title = "qc_menu_waypoints_generic_sound_id_title",
+			desc = "qc_menu_waypoints_generic_sound_id_desc",
+			items = table.deep_map_copy(sound_items),
+			callback = ping_sound_callback_id,
+			skip_callback = true,
+			value_raw = ping_sound_index,
+			value_type = "number"
+		},
+		{
+			type = "divider",
+			id = "menu_waypoints_pingsnd_divider",
+			size = 8,
+			skip_callback = true
+		},
+		{
+			type = "toggle",
+			id = "menu_waypoints_acknowledged_sound_enabled",
+			title = "qc_menu_waypoints_acknowledged_sound_enabled_title",
+			desc = "qc_menu_waypoints_acknowledged_sound_enabled_desc",
+			value = "waypoints_acknowledge_sound_enabled",
+			skip_callback = false,
+			value_type = "boolean"
+		},
+		{
+			type = "slider",
+			id = "menu_waypoints_acknowledge_sound_volume",
+			title = "qc_menu_waypoints_generic_sound_volume_title",
+			desc = "qc_menu_waypoints_generic_sound_volume_desc",
+			value = "waypoints_acknowledge_sound_volume",
+			min = 0,
+			max = 1,
+			step = 0.1,
+			show_value = true,
+			skip_callback = false,
+			value_type = "number"
+		},
+		{
+			type = "multiple_choice",
+			id = "menu_waypoints_acknowledge_sound_id",
+			title = "qc_menu_waypoints_generic_sound_id_title",
+			desc = "qc_menu_waypoints_generic_sound_id_desc",
+			items = table.deep_map_copy(sound_items),
+			callback = acknowledge_sound_callback_id,
+			skip_callback = true,
+			value_raw = acknowledge_sound_index,
+			value_type = "number"
+		},
+		{
+			type = "divider",
+			id = "menu_waypoints_acksnd_divider",
+			size = 8,
+			skip_callback = true
+		},
+		{
+			type = "toggle",
+			id = "menu_waypoints_unacknowledge_sound_enabled",
+			title = "qc_menu_waypoints_unacknowledge_sound_enabled_title",
+			desc = "qc_menu_waypoints_unacknowledge_sound_enabled_desc",
+			value = "waypoints_unacknowledge_sound_enabled",
+			skip_callback = false,
+			value_type = "boolean"
+		},
+		{
+			type = "slider",
+			id = "menu_waypoints_unacknowledge_sound_volume",
+			title = "qc_menu_waypoints_generic_sound_volume_title",
+			desc = "qc_menu_waypoints_generic_sound_volume_desc",
+			value = "waypoints_unacknowledge_sound_volume",
+			min = 0,
+			max = 1,
+			step = 0.1,
+			show_value = true,
+			skip_callback = false,
+			value_type = "number"
+		},
+		{
+			type = "multiple_choice",
+			id = "menu_waypoints_unacknowledge_sound_id",
+			title = "qc_menu_waypoints_generic_sound_id_title",
+			desc = "qc_menu_waypoints_generic_sound_id_desc",
+			items = table.deep_map_copy(sound_items),
+			callback = unacknowledge_sound_callback_id,
+			skip_callback = true,
+			value_raw = unacknowledge_sound_index,
+			value_type = "number"
+		},
+		{
+			type = "divider",
+			id = "menu_waypoints_unacksnd_divider",
+			size = 16,
+			skip_callback = true
+		},
+		{
+			type = "multiple_choice",
+			id = "qc_menu_user_language",
+			title = "qc_menu_user_language_title",
+			desc = "qc_menu_user_language_title_desc",
+			items = table.deep_map_copy(lang_items),
+			callback = user_lang_callback_id,
+			skip_callback = true,
+			value_raw = selected_lang_index,
+			value_type = "number"
+		},
+		{
+			type = "divider",
+			id = "menu_waypoints_lang_divider",
+			size = 8,
+			skip_callback = true
+		},
+		{
+			type = "toggle",
+			id = "menu_debug_logs_enabled",
+			title = "qc_menu_debug_logs_enabled_title",
+			desc = "qc_menu_debug_logs_enabled_desc",
+			value = "debug_draw",
+			skip_callback = false,
+			value_type = "boolean"
 		}
 	}
-	
 	for i,menu_data in ipairs(settings_items) do
+--	for i=#settings_items,1,-1 do
+--		local menu_data = settings_items[i]
 		local value_id = menu_data.value
 		if value_id and not menu_data.skip_callback then
 			local callback_id = "callback_" .. menu_data.id
@@ -5088,12 +5106,13 @@ Hooks:Add("MenuManagerPopulateCustomMenus","QuickChat_MenuManagerPopulateCustomM
 			-- menu_data.button = ""
 			-- menu_data.connection_name = "" 
 		end
-		QuickChat.add_menu_option_from_data(i,menu_data,QuickChat.MENU_IDS.MENU_SETTINGS,QuickChat.settings,QuickChat.default_settings)
+		QuickChat.add_menu_option_from_data(1+#settings_items-i,menu_data,QuickChat.MENU_IDS.MENU_SETTINGS,QuickChat.settings,QuickChat.default_settings)
+--		menu_data.menu_id = QuickChat.MENU_IDS.MENU_SETTINGS
+--		table.insert(binding_items,#binding_items+1,menu_data)
 	end
 	
-	for i=#final_items,1,-1 do
-		local menu_data = final_items[i]
-		QuickChat.add_menu_option_from_data(i,menu_data,menu_data.menu_id,QuickChat.settings,QuickChat.default_settings)
+	for i,menu_data in ipairs(binding_items) do
+		QuickChat.add_menu_option_from_data(1+#binding_items-i,menu_data,menu_data.menu_id,QuickChat.settings,QuickChat.default_settings)
 	end
 end)
 
