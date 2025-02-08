@@ -6,9 +6,15 @@
 	
 	-- don't mark security cameras that are disabled (eg if camera operator element is neutralized)
 	
+	-- fix autoping detecting bodybag interaction?
+		-- use can_interact()? 
+			-- but that would disable other pings, eg. pinging a car, then picking up a bag, would remove the car ping, since you can't enter a car while carrying a bag
+			-- case-specific solution it is i guess.
+	
 	--auto icon for units
-		--by interaction id; only in neutral ping
-		-- also with menu option
+		-- menu option
+	
+	-- allow selecting ping/acknowledge/unacknowledge sounds from the same pool
 	
 	-- lock/lockpick icon?
 	-- grenade case icon
@@ -136,9 +142,13 @@ QuickChat.default_settings = {
 	waypoints_alert_on_registration = true,
 	--waypoints_max_count = 1, --deprecated
 	waypoints_acknowledge_sound_enabled = true,
-	waypoints_acknowledge_sound_volume = 0.66, -- [0-1] volume of acknowledged sound
+	waypoints_acknowledge_sound_id = "chime_1", -- key to the list of registered quickchat sounds
+	waypoints_acknowledge_sound_volume = 0.66, -- [0-1] volume of acknowledged/unacknowledged sound
+	waypoints_unacknowledge_sound_enabled = true,
+	waypoints_unacknowledge_sound_id = "scifi_3", -- key to the list of registered quickchat sounds
+	waypoints_unacknowledge_sound_volume = 0.66,
 	waypoints_ping_sound_enabled = true,
-	waypoints_ping_sound_id = "standard", -- key to the list of registered quickchat sounds
+	waypoints_ping_sound_id = "bird", -- key to the list of registered quickchat sounds
 	waypoints_ping_sound_volume = 0.66, -- [0-1] volume of ping sound
 	waypoints_aim_dot_threshold = 0.995,
 	waypoints_attenuate_alpha_mode = 1, -- 1: do not fadeout. 2: fadeout at screen center. 3: fadeout at screen edges.
@@ -156,6 +166,12 @@ QuickChat.sort_settings = {
 	"waypoints_auto_icon",
 	"waypoints_alert_on_registration",
 	--"waypoints_max_count",
+	"waypoints_acknowledge_sound_enabled",
+	"waypoints_acknowledge_sound_id",
+	"waypoints_acknowledge_sound_volume",
+	"waypoints_unacknowledge_sound_enabled",
+	"waypoints_unacknowledge_sound_id",
+	"waypoints_unacknowledge_sound_volume",
 	"waypoints_ping_sound_enabled",
 	"waypoints_ping_sound_id",
 	"waypoints_ping_sound_volume",
@@ -1171,13 +1187,16 @@ QuickChat._is_loc_loaded = false
 
 QuickChat._localized_sound_names = {} -- holds sound names for the menu's multiplechoice
 QuickChat._ping_sounds = { -- only played locally, controlled by local user settings
-	standard = QuickChat._assets_path .. "sounds/PingStandard.ogg",
-	retro = QuickChat._assets_path .. "sounds/PingRetro.ogg",
-	scifi = QuickChat._assets_path .. "sounds/PingScifi.ogg",
-	whip = QuickChat._assets_path .. "sounds/PingWhip.ogg",
-	meme = QuickChat._assets_path .. "sounds/PingMeme.ogg"
+	bird = QuickChat._assets_path .. "sounds/bird.ogg",
+	retro = QuickChat._assets_path .. "sounds/retro.ogg",
+	scifi_1 = QuickChat._assets_path .. "sounds/scifi_1.ogg",
+	scifi_2 = QuickChat._assets_path .. "sounds/scifi_2.ogg",
+	scifi_3 = QuickChat._assets_path .. "sounds/scifi_3.ogg",
+	whip = QuickChat._assets_path .. "sounds/whip.ogg",
+	meme = QuickChat._assets_path .. "sounds/meme.ogg",
+	chime_1 = QuickChat._assets_path .. "sounds/chime_1.ogg",
+	chime_2 = QuickChat._assets_path .. "sounds/chime_2.ogg"
 }
-QuickChat._ACKNOWLEDGED_SFX_PATH = QuickChat._assets_path .. "sounds/PingAcknowledged.ogg"
 
 QuickChat._CUSTOM_RESOURCES = {
 --[[
@@ -1606,7 +1625,7 @@ function QuickChat.parse_l10n_csv(path) -- not yet implemented
 		local loc_str = all_data[2][i]
 		if loc_id and string.gsub(loc_id,"%s","") ~= "" then
 			-- un-escape quotes and newlines
-			lang_data[loc_id] = string.gsub(string.gsub(loc_str,"\\n","\n"),"\\","\"")
+			lang_data[loc_id] = string.gsub(string.gsub(loc_str,"\\n","\n"),'\\"','"')
 		end
 	end
 	return lang_data
@@ -1710,21 +1729,34 @@ function QuickChat:GetWaypointAttenuateAlphaMode()
 	return self.settings.waypoints_attenuate_alpha_mode
 end
 
+function QuickChat:IsWaypointSfxEnabled()
+	return self.settings.waypoints_ping_sound_enabled
+end
 function QuickChat:GetWaypointSfxId()
 	return self.settings.waypoints_ping_sound_id
 end
 function QuickChat:GetWaypointSfxVolume()
 	return self.settings.waypoints_ping_sound_volume
 end
-function QuickChat:IsWaypointSfxEnabled()
-	return self.settings.waypoints_ping_sound_enabled
-end
 
+function QuickChat:IsAcknowledgedSfxEnabled()
+	return self.settings.waypoints_acknowledge_sound_enabled
+end
+function QuickChat:GetAcknowledgedSfxId()
+	return self.settings.waypoints_acknowledge_sound_id
+end
 function QuickChat:GetAcknowledgedSfxVolume()
 	return self.settings.waypoints_acknowledge_sound_volume
 end
-function QuickChat:IsAcknowledgedSfxEnabled()
-	return self.settings.waypoints_acknowledge_sound_enabled
+
+function QuickChat:IsUnacknowledgedSfxEnabled()
+	return self.settings.waypoints_unacknowledge_sound_enabled
+end
+function QuickChat:GetUnacknowledgedSfxId()
+	return self.settings.waypoints_unacknowledge_sound_id
+end
+function QuickChat:GetUnacknowledgedSfxVolume()
+	return self.settings.waypoints_unacknowledge_sound_volume
 end
 
 function QuickChat:IsWaypointRegistrationAlertEnabled()
@@ -3190,17 +3222,33 @@ function QuickChat:_AcknowledgeWaypoint(peer_id,waypoint_owner,waypoint_id)
 		else
 			--self:Log("Waypoint panel not alive")
 		end
-		if self:IsAcknowledgedSfxEnabled() and checkmark_visible then
-			local src
-			if managers.player:local_player() then
-				src = XAudio.UnitSource:new(XAudio.PLAYER,XAudio.Buffer:new(self._ACKNOWLEDGED_SFX_PATH))
-			else
-				-- play sound even if user is dead
-				src = XAudio.Source:new(XAudio.Buffer:new(self._ACKNOWLEDGED_SFX_PATH))
-			end
-			src:set_volume(self:GetAcknowledgedSfxVolume())
-		end
 		
+		local snd_id,snd_vol
+		if checkmark_visible then
+			if self:IsAcknowledgedSfxEnabled() then
+				snd_id = self:GetAcknowledgedSfxId()
+				snd_vol = self:GetAcknowledgedSfxVolume()
+			end
+		else
+			-- play unacknowledge sound
+			if self:IsUnacknowledgedSfxEnabled() then
+				snd_id = self:GetUnacknowledgedSfxId()
+				snd_vol = self:GetUnacknowledgedSfxVolume()
+			end
+		end
+		if snd_id then
+			local snd_path = self._ping_sounds[snd_id]
+			if snd_path then
+				local src
+				if managers.player:local_player() then
+					src = XAudio.UnitSource:new(XAudio.PLAYER,XAudio.Buffer:new(snd_path))
+				else
+					-- play sound even if user is dead
+					src = XAudio.Source:new(XAudio.Buffer:new(snd_path))
+				end
+				src:set_volume(snd_vol)
+			end
+		end
 	else
 		self:Log(string.format("Attempted to acknowledge an invalid waypoint: sender %i | owner %i | waypoint %i",peer_id,waypoint_owner,waypoint_id))
 	end
@@ -4689,31 +4737,47 @@ Hooks:Add("MenuManagerPopulateCustomMenus","QuickChat_MenuManagerPopulateCustomM
 		QuickChat:SaveSettings()
 	end
 	
+	local ping_sound_index = 1
+	local acknowledge_sound_index = 1
+	local unacknowledge_sound_index = 1
+	local sound_id_ping = QuickChat:GetWaypointSfxId()
+	local sound_id_acknowledge = QuickChat:GetAcknowledgedSfxId()
+	local sound_id_unacknowledge = QuickChat:GetUnacknowledgedSfxId()
 	
-	
-	
-	
-	local selected_sound_index = 1
-	local selected_sound_id = QuickChat.settings.waypoints_ping_sound_id
-	local sound_items = {} -- index:loc_id
 	local sound_ids = {} -- index:id 
+	local sound_items = {} -- index:loc_id
 	local sound_locs = {} -- loc_id:str
 	
 	for id,path in pairs(QuickChat._ping_sounds) do 
-		local i = #sound_items+1
+		sound_ids[#sound_ids+1] = id -- create an array in which to sort the sound selections
+	end
+	table.sort(sound_ids,function(a,b)
+		-- sort selections alphabetically
+		return managers.localization:text(a) < managers.localization:text(b)
+	end)
+	for i,id in ipairs(sound_ids) do
 		local loc_str = "qc_menu_snd_" .. id
-		table.insert(sound_items,i,loc_str)
-		table.insert(sound_ids,i,id)
+		sound_items[i] = loc_str
 		sound_locs[loc_str] = id
-		if id == selected_sound_id then
-			selected_sound_index = i
+		-- multiplechoice options must be localized (afaik) even if you have the "localized" flag set to false
+		-- so "localize" the sound by generating a unique loc id for it, and setting the sound id to the "localized" string
+		
+		-- assign the proper selection index for each option,
+		-- so that the multiplechoice has your current sound already visually selected when you enter the menu
+		if id == sound_id_ping then
+			ping_sound_index = i
+		end
+		if id == sound_id_acknowledge then
+			acknowledge_sound_index = i
+		end
+		if id == sound_id_unacknowledge then
+			unacknowledge_sound_index = i
 		end
 	end
-	--QuickChat._localized_sound_names = sound_locs
 	managers.localization:add_localized_strings(sound_locs)
 	
-	local selected_sound_callback_id = "callback_menu_waypoints_ping_sound_id"
-	MenuCallbackHandler[selected_sound_callback_id] = function(this,item)
+	local ping_sound_callback_id = "callback_menu_waypoints_ping_sound_id"
+	MenuCallbackHandler[ping_sound_callback_id] = function(this,item)
 		local selected_index = validate(item:value(),"number")
 		local id = sound_ids[selected_index]
 		if id then
@@ -4734,6 +4798,51 @@ Hooks:Add("MenuManagerPopulateCustomMenus","QuickChat_MenuManagerPopulateCustomM
 		QuickChat:SaveSettings()
 	end
 	
+	local acknowledge_sound_callback_id = "callback_menu_waypoints_acknowledge_sound_id"
+	MenuCallbackHandler[acknowledge_sound_callback_id] = function(this,item)
+		local selected_index = validate(item:value(),"number")
+		local id = sound_ids[selected_index]
+		if id then
+			QuickChat.settings.waypoints_acknowledge_sound_id = id
+			-- preview sound
+			local path = QuickChat._ping_sounds[id]
+			if path then
+				local src
+				if managers.player:local_player() then
+					src = XAudio.UnitSource:new(XAudio.PLAYER,XAudio.Buffer:new(path))
+				else
+					src = XAudio.Source:new(XAudio.Buffer:new(path))
+				end
+				src._auto_pause = false
+				src:set_volume(QuickChat:GetAcknowledgedSfxVolume())
+			end
+		end
+		QuickChat:SaveSettings()
+	end
+	
+	local unacknowledge_sound_callback_id = "callback_menu_waypoints_unacknowledge_sound_id"
+	MenuCallbackHandler[unacknowledge_sound_callback_id] = function(this,item)
+		local selected_index = validate(item:value(),"number")
+		local id = sound_ids[selected_index]
+		if id then
+			QuickChat.settings.waypoints_unacknowledge_sound_id = id
+			-- preview sound
+			local path = QuickChat._ping_sounds[id]
+			if path then
+				local src
+				if managers.player:local_player() then
+					src = XAudio.UnitSource:new(XAudio.PLAYER,XAudio.Buffer:new(path))
+				else
+					src = XAudio.Source:new(XAudio.Buffer:new(path))
+				end
+				src._auto_pause = false
+				src:set_volume(QuickChat:GetUnacknowledgedSfxVolume())
+			end
+		end
+		QuickChat:SaveSettings()
+	end
+	
+	
 	local settings_items = {
 		{
 			type = "multiple_choice",
@@ -4747,6 +4856,12 @@ Hooks:Add("MenuManagerPopulateCustomMenus","QuickChat_MenuManagerPopulateCustomM
 			value_type = "number"
 		},
 		{
+			type = "divider",
+			id = "menu_waypoints_lang_divider",
+			size = 8,
+			skip_callback = true
+		},
+		{
 			type = "toggle",
 			id = "menu_waypoints_ping_sound_enabled",
 			title = "qc_menu_waypoints_ping_sound_enabled_title",
@@ -4758,8 +4873,8 @@ Hooks:Add("MenuManagerPopulateCustomMenus","QuickChat_MenuManagerPopulateCustomM
 		{
 			type = "slider",
 			id = "menu_waypoints_ping_sound_volume",
-			title = "qc_menu_waypoints_ping_sound_volume_title",
-			desc = "qc_menu_waypoints_ping_sound_volume_desc",
+			title = "qc_menu_waypoints_generic_sound_volume_title",
+			desc = "qc_menu_waypoints_generic_sound_volume_desc",
 			value = "waypoints_ping_sound_volume",
 			min = 0,
 			max = 1,
@@ -4771,17 +4886,56 @@ Hooks:Add("MenuManagerPopulateCustomMenus","QuickChat_MenuManagerPopulateCustomM
 		{
 			type = "multiple_choice",
 			id = "menu_waypoints_ping_sound_id",
-			title = "qc_menu_waypoints_ping_sound_id_title",
-			desc = "qc_menu_waypoints_ping_sound_id_desc",
+			title = "qc_menu_waypoints_generic_sound_id_title",
+			desc = "qc_menu_waypoints_generic_sound_id_desc",
 			items = table.deep_map_copy(sound_items),
-			callback = selected_sound_callback_id,
+			callback = ping_sound_callback_id,
 			skip_callback = true,
-			value_raw = selected_sound_index,
+			value_raw = ping_sound_index,
 			value_type = "number"
 		},
 		{
 			type = "divider",
 			id = "menu_waypoints_ack_divider",
+			size = 8,
+			skip_callback = true
+		},
+		{
+			type = "toggle",
+			id = "menu_waypoints_unacknowledge_sound_enabled",
+			title = "qc_menu_waypoints_unacknowledge_sound_enabled_title",
+			desc = "qc_menu_waypoints_unacknowledge_sound_enabled_desc",
+			value = "waypoints_unacknowledge_sound_enabled",
+			skip_callback = false,
+			value_type = "boolean"
+		},
+		{
+			type = "slider",
+			id = "menu_waypoints_unacknowledge_sound_volume",
+			title = "qc_menu_waypoints_generic_sound_volume_title",
+			desc = "qc_menu_waypoints_generic_sound_volume_desc",
+			value = "waypoints_unacknowledge_sound_volume",
+			min = 0,
+			max = 1,
+			step = 0.1,
+			show_value = true,
+			skip_callback = false,
+			value_type = "number"
+		},
+		{
+			type = "multiple_choice",
+			id = "menu_waypoints_unacknowledge_sound_id",
+			title = "qc_menu_waypoints_generic_sound_id_title",
+			desc = "qc_menu_waypoints_generic_sound_id_desc",
+			items = table.deep_map_copy(sound_items),
+			callback = unacknowledge_sound_callback_id,
+			skip_callback = true,
+			value_raw = unacknowledge_sound_index,
+			value_type = "number"
+		},
+		{
+			type = "divider",
+			id = "menu_waypoints_unack_divider",
 			size = 8,
 			skip_callback = true
 		},
@@ -4797,14 +4951,25 @@ Hooks:Add("MenuManagerPopulateCustomMenus","QuickChat_MenuManagerPopulateCustomM
 		{
 			type = "slider",
 			id = "menu_waypoints_acknowledge_sound_volume",
-			title = "qc_menu_waypoints_acknowledge_sound_volume_title",
-			desc = "qc_menu_waypoints_acknowledge_sound_volume_desc",
+			title = "qc_menu_waypoints_generic_sound_volume_title",
+			desc = "qc_menu_waypoints_generic_sound_volume_desc",
 			value = "waypoints_acknowledge_sound_volume",
 			min = 0,
 			max = 1,
 			step = 0.1,
 			show_value = true,
 			skip_callback = false,
+			value_type = "number"
+		},
+		{
+			type = "multiple_choice",
+			id = "menu_waypoints_acknowledge_sound_id",
+			title = "qc_menu_waypoints_generic_sound_id_title",
+			desc = "qc_menu_waypoints_generic_sound_id_desc",
+			items = table.deep_map_copy(sound_items),
+			callback = acknowledge_sound_callback_id,
+			skip_callback = true,
+			value_raw = acknowledge_sound_index,
 			value_type = "number"
 		},
 		{
