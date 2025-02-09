@@ -1,7 +1,22 @@
 --TODO
 	-- validate incoming wps (no crashing)
 		-- enforce no-pinging-teammates from incoming pings, just in case
-	
+		
+	-- different behaviour/outcome options
+		-- behaviours
+			-- press
+			-- hold
+			-- double/triple tap (JUST KEEP TAPPING)
+			-- double tap + hold second tap
+		-- outcomes
+			-- visualize a raycast to the hit unit
+			-- clear raycasts
+			-- open radial menu
+			-- force timer mode
+		
+		
+	-- long name for quickchat menu options title
+		-- short name for quickchat message sender prefix
 	-- slider for secondary sphere cast radius?
 	
 	-- don't mark security cameras that are disabled (eg if camera operator element is neutralized)
@@ -41,18 +56,19 @@
 		--todo use _supported_controller_type_map instead of manual mapping?
 			--may not be necessary if only the wrapper type is used
 		--needs VR support
-		--split paused/nonpaused updaters into separate tables for efficiency
 		--offscreen waypoint arrow needs visual adjustment
 			--arrow triangle is too even
 		
 		--waypoint distance from player instead of camera?
-		--upscale assets (48x?)
-		--"fuzzy" cylinder raycasts?
+		--downscale assets (48x?)
+			-- i really thought 64x was the play
 		
 		--proximity priority for spherecast
+		-- need to find a network receive solution that isn't spherecasting for the unit_id;
+		-- as it stands, theoretically, a severely desynced unit might fail to be found by the receiver peer if it's outside the expected radius
+			-- searching enemies list/interactions list?
+				-- this might limit the possible unit options since not every unit is in a neat list;
 	--FEATURES
-		-- when holding ping button, visualize a raycast to the hit unit
-	
 		--linger time for timer waypoints
 		
 		--modifier key to force placement
@@ -101,8 +117,8 @@
 	--ASSETS
 		
 		--autotranslate icon for pretranslated messages in chat
+			-- something is wrong with the special character i'm using in the merged_font, i think
 		--normal surface plane for area markers
-		-- use pd2 particle system?
 		
 	--BUGS
 		--TimerManager:game():time() between client and host is desynced; use a different timer
@@ -114,6 +130,7 @@
 		--known issue: discrepancies in max waypoint count between players may cause unexpected behavior
 			--waypoint limits are only enforced locally, so a client with a higher count may see other players' waypoints linger
 			--waypoint limit is now set at 1 globally, with no setting; consider this resolved
+		-- enforce no tagging teammates via ignore_units from all peers
 		
 	--TESTS
 		
@@ -2863,7 +2880,7 @@ function QuickChat:ReceiveAddWaypoint(peer_id,message_string) --sync create wayp
 		local _timer_data = data[4]
 		local start_t = TimerManager:game():time() --not exactly the same as original send time due to latency, but close enough; 
 		local end_t = nil --end_t should be properly synced, on the other hand
-		if _timer_data ~= "0" and string.find(_timer_data,":") then
+		if _timer_data and _timer_data ~= "0" and string.find(_timer_data,":") then
 			local timer_data = string.split(_timer_data,":")
 			--circumvent issue with regional "." vs "," difference for post-decimal values
 			end_t = to_int(timer_data[1]) + to_int(timer_data[2]) / 100
@@ -2888,6 +2905,7 @@ function QuickChat:ReceiveAddWaypoint(peer_id,message_string) --sync create wayp
 				--syncing units directly without using the built-in network extensions is a challenge
 				--but hypothetically, most units should probably be well within this distance at the time of receiving the waypoint message
 				local slot_mask = self._waypoint_target_slotmask
+				-- todo enforce no tagging teammates via ignore_units from all peers
 				local near_units = World:find_units_quick("sphere",position,self.WAYPOINT_RAYCAST_DISTANCE / 2,slot_mask)
 				for _,unit in pairs(near_units) do 
 					if unit:id() == unit_id then
@@ -3293,7 +3311,7 @@ function QuickChat:ReceiveGCWAttach(peer_id,message_string)
 			waypoint_type = self.WAYPOINT_TYPES.UNIT,
 			is_gcw = true,
 			label_index = nil,
-			icon_index = 168,
+			icon_index = self:GetIconIndexFromId("infamy_icon_1"),
 			end_t = nil,
 			position = position,
 			unit_id = unit_id,
@@ -3313,7 +3331,7 @@ function QuickChat:ReceiveGCWPlace(peer_id,message_string)
 			waypoint_type = self.WAYPOINT_TYPES.POSITION,
 			is_gcw = true,
 			label_index = nil,
-			icon_index = 168,
+			icon_index = self:GetIconIndexFromId("infamy_icon_1"),
 			end_t = nil,
 			position = position,
 			unit_id = unit_id,
