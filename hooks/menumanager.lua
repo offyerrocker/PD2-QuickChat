@@ -1,7 +1,4 @@
 --TODO
-	-- validate incoming wps (no crashing)
-		-- enforce no-pinging-teammates from incoming pings, just in case
-		
 	-- different behaviour/outcome options
 		-- behaviours
 			-- press
@@ -97,7 +94,7 @@
 
 		--allow raycasting teammates (ai)
 		
-		--display current gamepad mode in menu
+		--display current gamepad mode in options menu
 		--customization
 			--custom radial messages (use QKI?)
 			--preview radial in menu
@@ -130,7 +127,6 @@
 		--known issue: discrepancies in max waypoint count between players may cause unexpected behavior
 			--waypoint limits are only enforced locally, so a client with a higher count may see other players' waypoints linger
 			--waypoint limit is now set at 1 globally, with no setting; consider this resolved
-		-- enforce no tagging teammates via ignore_units from all peers
 		
 	--TESTS
 		
@@ -1658,6 +1654,22 @@ function QuickChat._animate_grow(o,duration,speed,w,h,c_x,c_y)
 	o:set_center(c_x,c_y)
 end
 
+function QuickChat:GetIgnoreUnits(ignore_units)
+	ignore_units = ignore_units or {}
+	local session = managers.network:session()
+	-- don't allow pinging teammates
+	if session then
+		for _,peer in pairs(session:peers()) do 
+			local peer_unit = peer:unit()
+			if alive(peer_unit) then
+				table.insert(ignore_units,#ignore_units+1,peer_unit)
+			end
+		end
+	end
+	
+	return ignore_units
+end
+
 function QuickChat:stylize_translated_message(s)
 	return string.format(self._MESSAGE_PRESET_FORMAT,s)
 end
@@ -2477,6 +2489,7 @@ function QuickChat:AddWaypoint(params) --called whenever local player attempts t
 	local debug_draw_enabled = self:IsDebugDrawEnabled()
 	local debug_draw_duration = self._DEBUG_DRAW_DURATION
 	local session = managers.network:session()
+	if not session then return end
 	local peer_id = session:local_peer():id()
 	params = params or {}
 	local is_neutral_ping = params.is_neutral_ping
@@ -2507,20 +2520,12 @@ function QuickChat:AddWaypoint(params) --called whenever local player attempts t
 	mvec3_set(tmp_camfrom_vec3,viewport_cam:position())
 	mvec3_set(tmp_camto_vec3,viewport_cam:rotation():y())
 	
-	local ignore_units = {}
+	local ignore_units = self:GetIgnoreUnits()
 	if game_state_machine and game_state_machine:current_state_name() == "ingame_access_camera" then
 		-- allow pinging through cameras
 		local state = game_state_machine:current_state()
 		if state._last_access_camera and state._last_access_camera:has_camera_unit() then
 			table.insert(ignore_units,1,state._last_access_camera:camera_unit())
-		end
-	end
-	
-	-- don't allow pinging teammates
-	for _,peer in pairs(session:peers()) do 
-		local peer_unit = peer:unit()
-		if alive(peer_unit) then
-			table.insert(ignore_units,1,peer_unit)
 		end
 	end
 	
@@ -2596,7 +2601,7 @@ function QuickChat:AddWaypoint(params) --called whenever local player attempts t
 		
 		if not unit_result then
 			--do secondary sphere cast to catch interactables specifically
-			local spherecast = World:find_units_quick("sphere",position,self.WAYPOINT_SECONDARY_CAST_RADIUS,self._waypoint_target_slotmask,"ignore_unit",ignore_units)
+			local spherecast = World:find_units_quick("sphere",position,self.WAYPOINT_SECONDARY_CAST_RADIUS,self._waypoint_target_slotmask,"ignore_unit",self:GetIgnoreUnits())
 			local tmp_unit_result
 			for _,_unit in ipairs(spherecast) do 
 				--secondary (spherecast) targets should prioritize objects instead of people
@@ -2905,8 +2910,7 @@ function QuickChat:ReceiveAddWaypoint(peer_id,message_string) --sync create wayp
 				--syncing units directly without using the built-in network extensions is a challenge
 				--but hypothetically, most units should probably be well within this distance at the time of receiving the waypoint message
 				local slot_mask = self._waypoint_target_slotmask
-				-- todo enforce no tagging teammates via ignore_units from all peers
-				local near_units = World:find_units_quick("sphere",position,self.WAYPOINT_RAYCAST_DISTANCE / 2,slot_mask)
+				local near_units = World:find_units_quick("sphere",position,self.WAYPOINT_RAYCAST_DISTANCE / 2,slot_mask,"ignore_unit",self:GetIgnoreUnits())
 				for _,unit in pairs(near_units) do 
 					if unit:id() == unit_id then
 						unit_result = unit
