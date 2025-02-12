@@ -168,3 +168,5 @@ qc_menu_waypoints_attentuate_dot_threshold_title	Fadeout Waypoint Threshold Far
 qc_menu_waypoints_attentuate_dot_threshold_desc	The screen distance at which the waypoint begins to fade out.
 qc_menu_user_language_title	User Language
 qc_menu_user_language_title_desc	Choose your language.
+qc_menu_waypoints_auto_icon_title	Automatic Icon
+qc_menu_waypoints_auto_icon_desc	For quick pings, determine the waypoint icon automatically.
