@@ -26,8 +26,6 @@
 	--auto icon for units
 		-- menu option
 	
-	-- allow selecting ping/acknowledge/unacknowledge sounds from the same pool
-	
 	-- lock/lockpick icon?
 	-- grenade case icon
 	
@@ -4899,6 +4897,21 @@ Hooks:Add("MenuManagerPopulateCustomMenus","QuickChat_MenuManagerPopulateCustomM
 			value_type = "number"
 		},
 		--]]
+		{
+			type = "toggle",
+			id = "menu_waypoints_auto_icon",
+			title = "qc_menu_waypoints_auto_icon_title",
+			desc = "qc_menu_waypoints_auto_icon_desc",
+			value = "waypoints_auto_icon",
+			skip_callback = false,
+			value_type = "boolean"
+		},
+		{
+			type = "divider",
+			id = "menu_waypoints_autoicon_divider",
+			size = 8,
+			skip_callback = true
+		},
 		{
 			type = "slider",
 			id = "menu_waypoints_aim_dot_threshold",
