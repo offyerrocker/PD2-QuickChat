@@ -317,7 +317,10 @@ QuickChat._INTERACTION_ICONS = {
 	money_wrap_single_bundle = "qc_loose_cash",
 	interact_gen_pku_loot_take = "qc_loose_cash",
 	diamond_pickup_pal = "qc_loose_cash",
-	diamond_pickup = "qc_loose_cash"
+	diamond_pickup = "qc_loose_cash",
+	muriatic_acid = "equipment_muriatic_acid",
+	hydrogen_chloride = "equipment_hydrogen_chloride",
+	caustic_soda = "equipment_caustic_soda"
 }
 
 -- supergroup of icons from various sources
