@@ -233,7 +233,7 @@ QuickChat.WAYPOINT_TARGET_CAST_TYPES = {
 	20,23,--pickups
 	21, --civilians
 	22, --hostages
-	26, --sentry gun
+	26, --sentry gun (not sure what this is, it definitely isn't just enemy swat turrets)
 	12,33,--enemies
 	39 --vehicles
 }
