@@ -1,4 +1,4 @@
---v2.0.1
+--v2.0.2
 
 --[[
 	TODO
@@ -57,6 +57,7 @@ end
 function RadialMenuManager.CreateQueuedMenus()
 	for i=#RadialMenuManager.queued_items,1,-1 do
 		local data = table.remove(RadialMenuManager.queued_items,i)
+		data.object:setup(data.params)
 	end
 end
 
@@ -88,7 +89,7 @@ function RadialMenuObject:init(radialmenumanager,params) --constructor
 	params = params or {}
 	
 	if not _G.managers.gui_data then 
-		table.insert(RadialMenuObject.queued_items,1,{params = params})
+		table.insert(RadialMenuManager.queued_items,1,{params = params,object = self})
 		--if RadialMenuObject:new() is called after RadialMenu loads but before the rest of the game,
 		--save the information for later and create it on game load
 		return
@@ -329,7 +330,7 @@ function RadialMenuDialog:recreate_gui()
 		visible = data.mouseover_text_visible
 	})
 	
-	local MARGIN_PERCENT = data.item_margin --10% of a slice's theta angle is cut off to create a margin
+	local MARGIN_PERCENT = data.item_margin or 0.1 --10% of a slice's theta angle is cut off to create a margin
 	for i,item in ipairs(data.items) do 
 		local icon_w = item.w or 32
 		local icon_h = item.h or 32
