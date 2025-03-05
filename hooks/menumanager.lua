@@ -1450,6 +1450,9 @@ do --load Lua ini Parser
 	end
 end
 
+--init superblt XAudio
+blt.xaudio.setup()
+
 local mvec3_distance = mvector3.distance
 local mvec3_dot = mvector3.dot
 local mvec3_add = mvector3.add
