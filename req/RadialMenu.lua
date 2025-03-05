@@ -320,8 +320,8 @@ function RadialMenuDialog:recreate_gui()
 	local mouseover_label = panel:text({
 		name = "mouseover_label",
 		text = data.default_mouseover_text or "",
-		font = data.font or "fonts/font_medium_shadow_mf",
-		font_size = data.font_size or 24,
+		font = data.font or tweak_data.hud.medium_font,
+		font_size = data.font_size or tweak_data.menu.default_font_size,
 		align = "center",
 		vertical = "center",
 		valign = "scale", --halign/valign don't apply to text object font size, only clipping box
@@ -378,8 +378,8 @@ function RadialMenuDialog:recreate_gui()
 		local label = panel:text({
 			name = "label_" .. i,
 			text = item.text or "",
-			font = item.font or "fonts/font_medium_shadow_mf",
-			font_size = item.font_size or 24,
+			font = item.font or tweak_data.hud.medium_font,
+			font_size = item.font_size or tweak_data.menu.default_font_size,
 			x = label_x,
 			y = label_y,
 			align = "center",
