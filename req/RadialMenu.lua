@@ -1,4 +1,4 @@
---v2.0.2
+--v2.0.3
 
 --[[
 	TODO
@@ -169,6 +169,7 @@ end
 function RadialMenuObject:Hide(...)
 	if self:IsActive() then
 		self._dialog:hide(...)
+		self._class_panel = nil
 	end
 end
 
@@ -191,6 +192,12 @@ function RadialMenuObject:IsActive()
 	return nil
 end
 
+-- dispose of this object's gui and prepare it to be removed
+function RadialMenuObject:Remove()
+	self:Hide(false)
+	self._dialog:pre_destroy()
+	self._dialog = nil
+end
 
 
 --====================================
@@ -200,7 +207,7 @@ RadialMenuDialog.NAME = "RadialMenuDialog"
 function RadialMenuDialog:init(manager,data,...)
 	RadialMenuDialog.super.init(self,manager,data,...)
 	
-	self._manager = manager --RadialMenuMananger
+	self._manager = manager --RadialMenuManager
 	self._ws = manager._ws
 	
 	self._parent = data.parent --parent RadialMenuObject (cannot be changed afterward)
@@ -854,6 +861,22 @@ function RadialMenuDialog:animate_mouseover_item_unfocus(index)
 			icon:animate(self._animate_grow_center,duration,icon:w(),icon:h(),item_data.w,item_data.h,item_data.icon_x,item_data.icon_y,icon:alpha(),item_data.unfocus_alpha)
 		end
 	end
+end
+
+-- remove panel, close dialog
+function RadialMenuDialog:pre_destroy()
+	if self._panel and alive(self._panel) and self._class_panel and alive(self._class_panel) then
+		self._class_panel:remove(self._panel)
+	end
+	
+	self._panel = nil
+	self._class_panel = nil
+	self._manager = nil
+	self._ws = nil
+	self._parent = nil
+	self._items = nil
+	self._mouse_id = nil
+	self._selected_index = nil
 end
 
 return RadialMenuManager

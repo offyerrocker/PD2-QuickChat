@@ -140,9 +140,10 @@ QuickChat._assets_path = QuickChat._mod_path .. "assets/"
 QuickChat._l10n_path = QuickChat._mod_path .. "l10n/"
 QuickChat._bindings_name = "bindings_$WRAPPER.json"
 QuickChat._settings_name = "settings.json"
-QuickChat._DEFAULT_LANGUAGE_ID = "en"
+QuickChat._DEFAULT_LANGUAGE_ID = "english"
 QuickChat.default_settings = {
 	debug_draw = false,
+	debug_logs = false,
 	user_language = QuickChat._DEFAULT_LANGUAGE_ID,
 	--compatibility_gcw_send_enabled = true, -- deprecated/combined into compatibility_gcw_enabled
 	--compatibility_gcw_receive_enabled = true, -- deprecated/combined into compatibility_gcw_enabled
@@ -177,6 +178,7 @@ QuickChat.default_settings = {
 QuickChat.settings = table.deep_map_copy(QuickChat.default_settings) --general user pref
 QuickChat.sort_settings = {
 	"debug_draw",
+	"debug_logs",
 	"user_language",
 	"compatibility_gcw_enabled",
 	"radial_deadzone",
@@ -1616,7 +1618,12 @@ function QuickChat:ChooseLanguage(lang_name)
 			-- load language
 			local path = self._l10n_path .. lang_name .. ".tsv"
 			self:Print("ChooseLanguage() Language file unknown for language",lang_name,"...Guessing file path:",path)
-			self:LoadLanguageFile(path)
+			if not self:LoadLanguageFile(path) then
+				local fallback_path = self._l10n_path .. self._DEFAULT_LANGUAGE_ID .. ".tsv"
+				self:Print("ChooseLanguage() Language file guess failed. Using fallback",fallback_path)
+				local success = self:LoadLanguageFile(fallback_path)
+				self:Print("ChooseLanguage() Pass?",success)
+			end
 		end
 	else
 		self:Print("ChooseLanguage() invalid lang_name given:",lang_name)
@@ -1795,18 +1802,22 @@ function QuickChat:stylize_translated_message(s)
 end
 
 function QuickChat:Log(msg)
-	if Console then
-		Console:Log(msg)
-	else
-		log(tostring(msg))
+	if self:IsDebugLoggingEnabled() then
+		if Console then
+			Console:Log(msg)
+		else
+			log(tostring(msg))
+		end
 	end
 end
 
 function QuickChat:Print(...)
-	if Console then
-		Console:Print(...)
-	else
-		log(...)
+	if self:IsDebugLoggingEnabled() then
+		if Console then
+			Console:Print(...)
+		else
+			log(...)
+		end
 	end
 end
 
@@ -1937,6 +1948,10 @@ function QuickChat:UseGCWUnitPingResolution()
 	return true
 end
 
+function QuickChat:IsDebugLoggingEnabled()
+	return self.settings.debug_logs
+end
+
 function QuickChat:IsDebugDrawEnabled()
 	return self.settings.debug_draw
 end
@@ -2024,6 +2039,7 @@ function QuickChat:Setup() --on game setup complete
 	self._waypoint_target_slotmask = World:make_slot_mask(unpack(self.WAYPOINT_TARGET_CAST_TYPES))
 	
 	self:PopulateInputCache()
+	self:PopulateActions()
 	if managers.hud then
 		local ws = managers.hud._saferect
 		self._ws = ws
@@ -2110,13 +2126,8 @@ function QuickChat:CloseAllRadialMenus()
 	end
 end
 
-function QuickChat:PopulateInputCache()
+function QuickChat:PopulateInputCache() -- register active keybinds for the updater to detect and check the input state for
 	--for each button,
-		--if the button is bound to a radial menu,
-			--if the radial menu does not exist, create it
-		--else, if the button has a different callback type,
-			--then assign the callback(s) to that button data
-		
 		--register button data to the button in the input cache
 	
 	for _,bind_data in pairs(self._bindings) do 
@@ -2127,26 +2138,7 @@ function QuickChat:PopulateInputCache()
 		if action_data then
 			local action_type = action_data.action_type
 			local sub_type = action_data.sub_type
-			if action_type == "radial" then
-				local radial_id = sub_type
-				if radial_id then
-					local radial_menu = self._radial_menus[radial_id]
-					if not radial_menu then
-						local radial_menu_params = self._radial_menu_params[radial_id]
-						if radial_menu_params then
-							radial_menu = self._radial_menu_manager:NewMenu(radial_menu_params)
-						end
-						if radial_menu then
-							self._radial_menus[radial_id] = radial_menu
-						else
-							self:Log("PopulateInputCache(): Error creating menu: " .. tostring(radial_id))
-						end
-					end
-				end
-			else
-				--other action type
-			end
-
+			
 			local callback_pressed,callback_released,callback_held = self:GetBindingCallbacks(action_data)
 
 			local new_input_data = {
@@ -2166,6 +2158,49 @@ function QuickChat:PopulateInputCache()
 				self._input_cache[button_name_ids].mouse = new_input_data
 			else
 				self._input_cache[button_name_ids].default = new_input_data
+			end
+		else
+			--self:Log("No action data defined for this bind! " .. tostring(button_name))
+		end
+	end
+end
+
+function QuickChat:PopulateActions() -- generate radials and other actions for their keybinds
+	--for each button,
+		--if the button is bound to a radial menu,
+			--if the radial menu does not exist, create it
+		--else, if the button has a different callback type,
+			--then assign the callback(s) to that button data
+			
+	for _,bind_data in pairs(self._bindings) do 
+		local button_name = bind_data.button_name
+		local button_name_ids = Idstring(button_name)
+		local is_mouse_button = bind_data.is_mouse_button
+		local action_data = bind_data.action_data
+		if action_data then
+			local action_type = action_data.action_type
+			local sub_type = action_data.sub_type
+			if action_type == "radial" then
+				local radial_id = sub_type
+				if radial_id then
+					local radial_menu = self._radial_menus[radial_id]
+					if radial_menu then
+						radial_menu:Remove()
+						radial_menu = nil
+					end
+					
+					local radial_menu_params = self._radial_menu_params[radial_id]
+					if radial_menu_params then
+						radial_menu = self._radial_menu_manager:NewMenu(radial_menu_params)
+					end
+					if radial_menu then
+						self._radial_menus[radial_id] = radial_menu
+					else
+						self:Log("PopulateInputCache(): Error creating menu: " .. tostring(radial_id))
+					end
+				end
+			else
+				--other action type
 			end
 		else
 			self:Log("No action data defined for this bind! " .. tostring(button_name))
@@ -2194,6 +2229,18 @@ function QuickChat:GetBindingCallbacks(action_data)
 	return callback_pressed,callback_released,callback_held
 end
 
+-- called when localization has changed and text needs to be refreshed
+function QuickChat:OnLocalizationChanged()
+	-- update radials with new localization
+	QuickChat:LoadCustomRadials()
+	QuickChat:PopulateInputCache()
+	QuickChat:PopulateActions()
+	
+	-- todo change all waypoints
+	-- todo change chat messages? probably not feasible
+	-- todo change menu buttons? those don't seem to refresh when the rest of the menu items do
+end
+
 --Keybind and Input Management
 
 function QuickChat:BindButtonToRadial(button_name,is_mouse_button,radial_id)
@@ -2220,6 +2267,7 @@ function QuickChat:BindButtonData(button_name,is_mouse_button,action_data)
 	table.insert(self._bindings,new_bind_data)
 	
 	self:PopulateInputCache()
+	self:PopulateActions()
 end
 
 function QuickChat:UnbindButton(button_name,is_mouse_button,skip_clear_cache)
@@ -4350,7 +4398,7 @@ function QuickChat:LoadBindings(filename)
 					-- valid binding with (probably) valid radial id
 					self._bindings[k] = v
 				else
-					self:Print("Invalid binding",k,v.action_data,v.sub_type)
+					self:Print("Invalid binding",k,"action_data",action_data,"sub_type",action_data.sub_type)
 				-- invalid binding; discard
 				end
 			else
@@ -4361,7 +4409,7 @@ function QuickChat:LoadBindings(filename)
 	end
 end
 
-function QuickChat:Load()
+function QuickChat:Load() -- deprecated
 	self:LoadSettings()
 	self:LoadBindings(self:GetBindingsFileName())
 end
@@ -4501,10 +4549,11 @@ Hooks:Add("MenuManagerSetupCustomMenus","QuickChat_MenuManagerSetupCustomMenus",
 	QuickChat:CheckResourcesReady()
 	
 	QuickChat:UnpackGamepadBindings()
-	QuickChat:LoadCustomRadials()
-	QuickChat:Load()
-	
+	QuickChat:LoadSettings()
 	QuickChat:ChooseLanguage(QuickChat:GetUserLanguage())
+	QuickChat:LoadCustomRadials()
+	QuickChat:LoadBindings(QuickChat:GetBindingsFileName())
+	
 	
 	MenuHelper:NewMenu(QuickChat.MENU_IDS.MENU_MAIN)
 	
@@ -4730,6 +4779,7 @@ Hooks:Add("MenuManagerPopulateCustomMenus","QuickChat_MenuManagerPopulateCustomM
 					self:CloseAllRadialMenus()
 					self:ClearInputCache()
 					self:PopulateInputCache()
+					self:PopulateActions()
 					refresh_menu_item(parent_menu_id,"qc_menu_bind_button_" .. tostring(action_id),managers.localization:text("qc_bind_status_title",{KEYNAME=button_display_name}))
 				end
 				
@@ -4883,6 +4933,8 @@ Hooks:Add("MenuManagerPopulateCustomMenus","QuickChat_MenuManagerPopulateCustomM
 		QuickChat:ChooseLanguage(lang_id)
 		QuickChat.settings.user_language = lang_id
 		QuickChat:SaveSettings()
+		
+		QuickChat:OnLocalizationChanged()
 	end
 	
 	local ping_sound_index = 1
@@ -5245,6 +5297,15 @@ Hooks:Add("MenuManagerPopulateCustomMenus","QuickChat_MenuManagerPopulateCustomM
 			id = "menu_debug_logs_enabled",
 			title = "qc_menu_debug_logs_enabled_title",
 			desc = "qc_menu_debug_logs_enabled_desc",
+			value = "debug_logs",
+			skip_callback = false,
+			value_type = "boolean"
+		},
+		{
+			type = "toggle",
+			id = "menu_debug_draw_enabled",
+			title = "qc_menu_debug_draw_enabled_title",
+			desc = "qc_menu_debug_draw_enabled_desc",
 			value = "debug_draw",
 			skip_callback = false,
 			value_type = "boolean"
@@ -5344,15 +5405,11 @@ Hooks:Add("MenuManagerInitialize","QuickChat_MenuManagerInitialize",function(men
 		QuickChat:CloseAllRadialMenus()
 		QuickChat:ClearInputCache()
 		QuickChat:PopulateInputCache()
+		QuickChat:PopulateActions()
 	end
---	QuickChat:Setup()
 end)
 
 Hooks:Add("LocalizationManagerPostInit","QuickChat_LocalizationManagerPostInit",function(loc)
-	--if not BeardLib then 
-	--	loc:load_localization_file(QuickChat._mod_path .. "loc/english.json")
-	--end
-	
 	QuickChat._is_loc_loaded = true
 	if QuickChat._loc_strings_load_queue then
 		for i=#QuickChat._loc_strings_load_queue,1,-1 do 
@@ -5361,10 +5418,6 @@ Hooks:Add("LocalizationManagerPostInit","QuickChat_LocalizationManagerPostInit",
 		end
 		QuickChat._loc_strings_load_queue = nil
 	end
-	
---	if not QuickChat._is_loc_loaded then	
---		QuickChat:ChooseLanguage(QuickChat.settings.user_language)
---	end
 end)
 
 Hooks:Add("NetworkReceivedData","QuickChat_NetworkReceivedData",function(sender, message_id, message_body)

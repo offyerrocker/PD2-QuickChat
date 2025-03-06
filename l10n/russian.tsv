@@ -170,3 +170,5 @@ qc_menu_user_language_title	Язык пользователя
 qc_menu_user_language_title_desc	Выберите свой язык
 qc_menu_waypoints_auto_icon_title	Автоматическая иконка
 qc_menu_waypoints_auto_icon_desc	Для быстрой метки, определить иконку метки автоматически
+qc_menu_debug_draw_enabled_title	Debug logs
+qc_menu_debug_draw_enabled_desc	Diagnostic messages for development or troubleshooting.

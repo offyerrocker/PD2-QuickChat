@@ -1,5 +1,5 @@
 ID	es
-qc_this_language	Spanish
+qc_this_language	Español
 qc_ptm_general_yes	Si
 qc_ptm_general_no	No
 qc_ptm_general_greeting	¡Hola!
@@ -170,3 +170,5 @@ qc_menu_user_language_title	Idioma del Usuario
 qc_menu_user_language_title_desc	Selecciona tu Idioma.
 qc_menu_waypoints_auto_icon_title	Icono Automático
 qc_menu_waypoints_auto_icon_desc	Para los Quick Pings, determina el icono del Waypoint automáticamente.
+qc_menu_debug_draw_enabled_title	Debug logs
+qc_menu_debug_draw_enabled_desc	Diagnostic messages for development or troubleshooting.

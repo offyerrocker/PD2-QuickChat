@@ -170,3 +170,5 @@ qc_menu_user_language_title	用户的语言
 qc_menu_user_language_title_desc	选择您的语言
 qc_menu_waypoints_auto_icon_title	自动图标
 qc_menu_waypoints_auto_icon_desc	使用快速标记，自动确认导航点图标
+qc_menu_debug_draw_enabled_title	Debug logs
+qc_menu_debug_draw_enabled_desc	Diagnostic messages for development or troubleshooting.
