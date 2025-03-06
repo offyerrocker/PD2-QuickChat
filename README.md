@@ -9,3 +9,9 @@ https://rocketburd.gitbook.io/quickchat-documentation-home/
 Ping sounds by Malfaltto.
 
 "Acknowledged" sound from here: https://freesound.org/people/gis_sweden/sounds/787837/
+
+## Translators:
+English: Offyerrocker
+Spanish: Anonymous
+Chinese: Anonymous
+Russian: Anonymous

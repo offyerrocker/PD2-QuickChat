@@ -1,0 +1,172 @@
+ID	cn
+qc_this_language	中文
+qc_ptm_general_yes	Yes
+qc_ptm_general_no	No
+qc_ptm_general_greeting	你好!
+qc_ptm_general_thanks	谢谢!
+qc_ptm_general_apology	抱歉...
+qc_ptm_general_curse	$#@%!
+qc_ptm_general_forgive	没问题!
+qc_ptm_general_acknowledged	明白了
+qc_ptm_general_goodgame_normal	GG!
+qc_ptm_general_goodgame_toxic	GGEZ
+qc_ptm_general_bye	拜拜啦!
+qc_ptm_general_brb	我有事马上回来,你们先打
+qc_ptm_general_nokeyboard	我用的不是键盘!
+qc_ptm_general_leaving_soon	我得快溜了
+qc_ptm_general_leaving_last_game	我最后打一把
+qc_ptm_general_healembargo	别治疗我！我是压血量配装!
+qc_ptm_general_achievementhunting	我在找成就
+qc_ptm_comms_claim	别急，我懂了!
+qc_ptm_comms_help	救救我!
+qc_ptm_comms_follow	跟我来!
+qc_ptm_comms_attack	冲!强突!
+qc_ptm_comms_defend	保护人质!
+qc_ptm_comms_regroup	我们需要重新集合!
+qc_ptm_comms_reviving	我去复活他们!
+qc_ptm_comms_comehere	快过来!
+qc_ptm_comms_caution	小心点!
+qc_ptm_comms_opening_door	我来开门!
+qc_ptm_comms_jammed_drill	钻机坏了!
+qc_ptm_comms_jammed_hack	骇入停了!
+qc_ptm_direction_left	往左!
+qc_ptm_direction_right	往右!
+qc_ptm_direction_up	往上!
+qc_ptm_direction_down	往下!
+qc_ptm_direction_forward	往前!
+qc_ptm_direction_backward	往后!
+qc_ptm_tactic_ask_stealth	我们要潜入吗?
+qc_ptm_tactic_ask_hybrid	潜入中途开强袭?
+qc_ptm_tactic_ask_loud	我们要强袭吗?
+qc_ptm_tactic_suggest_stealth	走!潜入吧!
+qc_ptm_tactic_suggest_hybrid	先潜入等会开打!
+qc_ptm_tactic_suggest_loud	冲!强袭吧!
+qc_ptm_need_docbag	我需要一个医疗包!
+qc_ptm_need_fak	我需要一个急救包!
+qc_ptm_need_ammo	我需要一个弹药袋!
+qc_ptm_need_ecm	谁来放个ECM!
+qc_ptm_need_sentrygun	麻烦在这放个哨戒炮台!
+qc_ptm_need_sentrygun_silent	麻烦在这放一个消音哨戒炮台!
+qc_ptm_need_tripmine	麻烦在这放一个诡雷!
+qc_ptm_need_shapedcharge	麻烦在这放个聚能炸药!
+qc_ptm_need_bodybags	我需要一个尸体袋!
+qc_ptm_need_grenades	麻烦在这放个手雷箱!
+qc_ptm_need_convert	我需要一个变节警察!
+qc_ptm_need_ties	谁来把这个人质绑一下!
+qc_equipment_ties	捆绑扎带
+qc_ptm_enemy_sniper	有狙!
+qc_ptm_enemy_cloaker	有特工!
+qc_ptm_enemy_taser	有泰瑟!
+qc_ptm_enemy_dozer	有熊!
+qc_ptm_enemy_medic	有医疗兵!
+qc_ptm_enemy_shield	有盾兵!
+qc_ptm_enemy_winters	有冬日队长!
+qc_ptm_enemy_msniper	有神射法警!
+qc_ptm_enemy_mshield	有神盾法警!
+qc_ptm_enemy_swatturret	有炮塔!
+qc_wp_look	快看
+qc_wp_go	走吧
+qc_wp_bag	战利品
+qc_wp_kill	击杀
+qc_wp_deploy	部署
+qc_wp_interact	互动
+qc_wp_defend	保卫
+qc_wp_avoid	躲避
+qc_hud_needs_something_template	我想我需要...
+qc_alert_player_gcw	正在使用 Goonmod's 的自定义导航点,同步可能会受到限制.
+qc_alert_player_registered_version_match	连接到 [$USERNAME]. 准备同步导航点.
+qc_alert_player_registered_version_mismatch	无法连接到 [$USERNAME]. (版本不匹配: [其他用户: $PEER_VERSION] [您的: $YOUR_VERSION])
+qc_error_chat_rate_limited	您的消息发送太快了！请稍等 $COOLDOWN 秒.
+qc_controller_pc	鼠标 + 键盘
+qc_controller_xbox360	Xbox 360 手柄
+qc_controller_xb1	Xbox One 手柄
+qc_controller_ps3	PlayStation 3 手柄
+qc_controller_ps4	PlayStation 4 手柄
+qc_controller_vr	VR 控制器
+qc_controller_steam	Steam 控制器
+qc_controller_gamepad	通用输入控制器
+qc_menu_main_title	快捷宣告
+qc_menu_main_desc	调整快捷宣告的设置
+qc_menu_binds_title	更改按键绑定
+qc_menu_binds_desc	为快捷宣告更改按键按键绑定
+qc_menu_settings_title	更改设置
+qc_menu_settings_desc	配置设置和选项
+qc_menu_keybind_radial_title	快捷轮盘菜单: [$NAME]
+qc_menu_keybind_radial_desc	打开快捷轮盘以发送消息或导航点
+qc_menu_keybind_quick_ping_title	快速标记
+qc_menu_keybind_quick_ping_desc	将导航点标记在您正在查看的位置
+qc_menu_keybind_clear_my_waypoints_title	清除我的导航点
+qc_menu_keybind_clear_my_waypoints_desc	清除所有由我标记的导航点
+qc_menu_keybind_clear_all_waypoints_title	清除所有导航点
+qc_menu_keybind_clear_all_waypoints_desc	清除所有玩家标记的导航点
+qc_menu_keybind_modifier_force_position_title	更改为: 仅限位置导航点
+qc_menu_keybind_modifier_force_position_desc	长按时:强制将您标记的所有导航点为静态导航点 (无法标记动态对象或物品)
+qc_menu_keybind_modifier_force_timer_title	更改为: 仅限计时导航点
+qc_menu_keybind_modifier_force_timer_desc	长按时:强制将您标记的所有导航点都有计时
+qc_menu_keybind_modifier_secondary_interact_title	更改为: 强制次要交互
+qc_menu_keybind_modifier_secondary_interact_desc	长按时: 仅允许您删除导航点或确认队友的导航点
+qc_menu_status_on	启用
+qc_menu_status_off	禁用
+qc_menu_dialog_accept	好的
+qc_menu_bind_prompt_unbind	解绑
+qc_menu_dialog_cancel	取消
+qc_menu_bind_prompt_unbound_title	按键未绑定
+qc_menu_bind_prompt_unbound_desc	取消绑定 [$KEYNAME] 在 [$ACTION]
+qc_menu_bind_prompt_conflict_title	按键绑定冲突
+qc_menu_bind_prompt_conflict_desc	无法绑定 [$KEYNAME]: 按键已经被绑定到 [$ACTION]
+qc_menu_bind_prompt_keyboard_title	绑定键盘按键
+qc_menu_bind_prompt_keyboard_desc	等待键盘绑定中...\n请按键盘上任意按钮进行绑定.\n或按 [$BTN_UNBIND] 取消绑定此按键.\n或按 [$BTN_CANCEL] 取消
+qc_menu_bind_prompt_controller_title	绑定其他控制器或手柄按键
+qc_menu_bind_prompt_controller_desc	等待控制器绑定中...\n请按控制器或手柄上任意按钮进行绑定.\n或按 [$BTN_UNBIND] 取消绑定此按键.\n或按 [$BTN_CANCEL] 取消
+qc_bind_status_success_title	绑定成功
+qc_bind_status_success_desc	将 [$ACTION] 绑定到 [$KEYNAME]
+qc_bind_status_unbound	[未绑定]
+qc_bind_status_title	绑定到: [$KEYNAME]
+qc_bind_status_desc	单击以绑定按键...
+qc_menu_customize_radial_title	自定义快捷轮盘
+qc_menu_customize_radial_desc	单击可自定义轮盘内容
+qc_menu_customize_voiceline_title	语音喊话
+qc_menu_customize_voiceline_desc	选择此项播放对应语音
+qc_menu_customize_anim_title	手势动作
+qc_menu_customize_anim_desc	选择此项时人物做出对应第一人称手势动作
+qc_menu_waypoint_timer_title	计时器
+qc_menu_waypoint_timer_desc	同步导航点的计时器(以秒为单位). 设置为0可禁用
+qc_menu_waypoint_icon_title	图标
+qc_menu_waypoint_icon_desc	同步导航点的图标
+qc_menu_waypoint_label_title	文本
+qc_menu_waypoint_label_desc	同步导航点上预设的文本信息
+qc_menu_ptm_title	预翻译消息
+qc_menu_ptm_desc	将在聊天栏中发送预翻译的消息. 其他使用(快捷宣告)的用户将以他们选择的语言看到
+qc_menu_waypoint_title	导航点
+qc_menu_waypoint_desc	在HUB上同步显示标记,显示玩家标记的位置、人物、或对象
+qc_menu_waypoints_ping_sound_enabled_title	启用标记音效
+qc_menu_waypoints_ping_sound_enabled_desc	每当有玩家标记了新导航点就会播放音效(仅自己可听到)
+qc_menu_waypoints_acknowledged_sound_enabled_title	启用确认标记音效
+qc_menu_waypoints_acknowledged_sound_enabled_desc	每当有玩家确认了任意导航点就会播放音效
+qc_menu_waypoints_unacknowledge_sound_enabled_title	启用删除导航点音效
+qc_menu_waypoints_unacknowledge_sound_enabled_desc	每当有玩家删除了任意导航点就会播放音效
+qc_menu_waypoints_generic_sound_volume_title	音量配置
+qc_menu_waypoints_generic_sound_volume_desc	音效的音量大小
+qc_menu_waypoints_generic_sound_id_title	音效配置
+qc_menu_waypoints_generic_sound_id_desc	为某事件执行播放某种音效
+qc_menu_debug_logs_enabled_title	调试日志
+qc_menu_debug_logs_enabled_desc	诊断问题. 关闭以获取更好的性能
+qc_menu_compatibility_gcw_enabled_title	兼容性选项: Goonmod's 的自定义导航点
+qc_menu_compatibility_gcw_enabled_desc	允许与拥有 Goonmod's 自定义导航点的队友进行发送/接收导航点消息
+qc_menu_waypoints_alert_on_registration_title	当队伍中有玩家拥有(快捷宣告)mod时进行通知
+qc_menu_waypoints_alert_on_registration_desc	当拥有(快捷宣告)的玩家加入游戏时.在聊天栏中显示仅自己可见的消息通知
+qc_menu_waypoints_aim_dot_threshold_title	\"删除/确认\" 灵敏度
+qc_menu_waypoints_aim_dot_threshold_desc	您需要多近瞄准一个导航点才能确认或删除
+qc_menu_waypoints_attenuate_alpha_mode_title	靠近显示导航点
+qc_menu_waypoints_attenuate_alpha_mode_desc	靠近淡入、远离淡出导航点，以防止屏幕堆积混乱
+qc_menu_waypoints_attenuate_alpha_mode_option_hide_disabled	始终显示
+qc_menu_waypoints_attenuate_alpha_mode_option_hide_center	中心淡出
+qc_menu_waypoints_attenuate_alpha_mode_option_hide_edges	边缘淡出
+qc_menu_waypoints_attenuate_alpha_min_title	淡出导航点的透明度
+qc_menu_waypoints_attenuate_alpha_min_desc	淡出导航点的不透明度. 数值越大越明显
+qc_menu_waypoints_attentuate_dot_threshold_title	淡出导航点的距离
+qc_menu_waypoints_attentuate_dot_threshold_desc	导航点淡出屏幕的最远距离的阈值
+qc_menu_user_language_title	用户的语言
+qc_menu_user_language_title_desc	选择您的语言
+qc_menu_waypoints_auto_icon_title	自动图标
+qc_menu_waypoints_auto_icon_desc	使用快速标记，自动确认导航点图标

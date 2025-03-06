@@ -1,0 +1,172 @@
+ID	ru
+qc_this_language	Русский
+qc_ptm_general_yes	Да
+qc_ptm_general_no	Нет
+qc_ptm_general_greeting	Привет!
+qc_ptm_general_thanks	Спасибо!
+qc_ptm_general_apology	Извини...
+qc_ptm_general_curse	Б#@%Ь
+qc_ptm_general_forgive	Без проблем
+qc_ptm_general_acknowledged	Приянто
+qc_ptm_general_goodgame_normal	gg
+qc_ptm_general_goodgame_toxic	ggez
+qc_ptm_general_bye	Пока!
+qc_ptm_general_brb	Мне нужно отойти на секунду
+qc_ptm_general_nokeyboard	У меня нет клавиатуры
+qc_ptm_general_leaving_soon	Я скоро пойду
+qc_ptm_general_leaving_last_game	Это последняя для меня
+qc_ptm_general_healembargo	Не лечите меня, у меня билд от низкого хп
+qc_ptm_general_achievementhunting	Я охочусь за достижениями
+qc_ptm_comms_claim	Нашёл!
+qc_ptm_comms_help	Помогите!
+qc_ptm_comms_follow	За мной!
+qc_ptm_comms_attack	Покажем им!
+qc_ptm_comms_defend	Защищайте цель!
+qc_ptm_comms_regroup	Нужно перегруппироваться 
+qc_ptm_comms_reviving	Я подниму!
+qc_ptm_comms_comehere	Иди сюда!
+qc_ptm_comms_caution	Осторожно!
+qc_ptm_comms_opening_door	Я займусь дверью
+qc_ptm_comms_jammed_drill	Дрель заело!
+qc_ptm_comms_jammed_hack	Взлом остановился!
+qc_ptm_direction_left	Налево!
+qc_ptm_direction_right	направо!
+qc_ptm_direction_up	Вверх
+qc_ptm_direction_down	Вниз!
+qc_ptm_direction_forward	Вперед!
+qc_ptm_direction_backward	Назад!
+qc_ptm_tactic_ask_stealth	Стелс или громко?
+qc_ptm_tactic_ask_hybrid	Стелсим частично?
+qc_ptm_tactic_ask_loud	Идем громко?
+qc_ptm_tactic_suggest_stealth	Давайте стелсом
+qc_ptm_tactic_suggest_hybrid	Попробуем частично стелсом
+qc_ptm_tactic_suggest_loud	Давайте громко
+qc_ptm_need_docbag	Мне нужна мед сумка!
+qc_ptm_need_fak	Мне нужна маленькая аптечка!
+qc_ptm_need_ammo	У кого-то есть патроны?
+qc_ptm_need_ecm	Ставь глушилку!
+qc_ptm_need_sentrygun	Здесь нужна турель
+qc_ptm_need_sentrygun_silent	Здесь нужна приглушенная турель
+qc_ptm_need_tripmine	Поставь тут мину
+qc_ptm_need_shapedcharge	Кумулятивный заряд сюда!
+qc_ptm_need_bodybags	У меня кончились мешки!
+qc_ptm_need_grenades	Поставь сумку с гранатами!
+qc_ptm_need_convert	Мне нужен джокер!
+qc_ptm_need_ties	У меня кончились стяжки!
+qc_equipment_ties	Кабельные стяжки!
+qc_ptm_enemy_sniper	Снайпер!
+qc_ptm_enemy_cloaker	Клокер!
+qc_ptm_enemy_taser	Тазер!
+qc_ptm_enemy_dozer	Бульдозер
+qc_ptm_enemy_medic	Медик!
+qc_ptm_enemy_shield	Щит!
+qc_ptm_enemy_winters	Винтерс!
+qc_ptm_enemy_msniper	Маршал Снайпер!
+qc_ptm_enemy_mshield	Маршал Щит!
+qc_ptm_enemy_swatturret	Турель!
+qc_wp_look	Смотри
+qc_wp_go	Иди
+qc_wp_bag	Забирай
+qc_wp_kill	Убей
+qc_wp_deploy	Поставь
+qc_wp_interact	Взаимодействуй
+qc_wp_defend	Defend
+qc_wp_avoid	Аккуратно
+qc_hud_needs_something_template	Дайте мне...
+qc_alert_player_gcw	[$USERNAME] использует Goonmod's Custom Waypoints. Синхронизация может быть ограничена
+qc_alert_player_registered_version_match	Подклюение к [$USERNAME] успешно.  Метки могут быть использованы
+qc_alert_player_registered_version_mismatch	Не удалось синхронизироваться с [$USERNAME]. (Несоответствие версий: [Их: $PEER_VERSION] [Ваша: $YOUR_VERSION])
+qc_error_chat_rate_limited	Сообщение отправлено слишком быстро! Подождите $COOLDOWN секунд
+qc_controller_pc	Мышь + Клавиатура
+qc_controller_xbox360	Контроллер Xbox 360
+qc_controller_xb1	Контроллер Xbox One
+qc_controller_ps3	Контроллер Playstation 3
+qc_controller_ps4	Контроллер Playstation 4
+qc_controller_vr	VR Контроллер
+qc_controller_steam	Контроллер Steam
+qc_controller_gamepad	Другой контроллер
+qc_menu_main_title	QuickChat
+qc_menu_main_desc	Настройки QuickChat
+qc_menu_binds_title	Изменить Клавиши
+qc_menu_binds_desc	Переназначить клавиши для QuickChat
+qc_menu_settings_title	Изменить Настройки
+qc_menu_settings_desc	Изменить настройки (такие как поведение меню)
+qc_menu_keybind_radial_title	Radial: [$NAME]
+qc_menu_keybind_radial_desc	Открывает круговое меню для отправки сообщений и меток
+qc_menu_keybind_quick_ping_title	QuickPing
+qc_menu_keybind_quick_ping_desc	Ставит метку на место, куда смотрит игрок
+qc_menu_keybind_clear_my_waypoints_title	Очистить мои метки
+qc_menu_keybind_clear_my_waypoints_desc	Убирает все метки, оставленные вами
+qc_menu_keybind_clear_all_waypoints_title	Очистить все метки
+qc_menu_keybind_clear_all_waypoints_desc	Убирает абсолютно все метки
+qc_menu_keybind_modifier_force_position_title	Модификатор: Метки только в одном положении
+qc_menu_keybind_modifier_force_position_desc	Если выбрано, все метки оставленные вами будут статичными (кроме меток целей)
+qc_menu_keybind_modifier_force_timer_title	Модификатор: Метки Таймеров
+qc_menu_keybind_modifier_force_timer_desc	Если выбрано, все метки которые вы оставите будут иметь на себе таймеры
+qc_menu_keybind_modifier_secondary_interact_title	Модификатор: Вторичное Действие
+qc_menu_keybind_modifier_secondary_interact_desc	Если выбрано, при нажатии на кнопку метки вы сможете только убрать свою метку или увидеть метку своего союзника
+qc_menu_status_on	Включено
+qc_menu_status_off	Отключено
+qc_menu_dialog_accept	Окей
+qc_menu_bind_prompt_unbind	Переназначить
+qc_menu_dialog_cancel	Отмена
+qc_menu_bind_prompt_unbound_title	Отвязать кнопку
+qc_menu_bind_prompt_unbound_desc	Отвязать [$KEYNAME] от [$ACTION].
+qc_menu_bind_prompt_conflict_title	Конфликт назначения кнопок
+qc_menu_bind_prompt_conflict_desc	Невозможно привязать [$KEYNAME]: кнопка уже привязана к [$ACTION].
+qc_menu_bind_prompt_keyboard_title	Привязать кнопку клавиатуры
+qc_menu_bind_prompt_keyboard_desc	Ожидание...\nНажмите на кнопку чтобы привязать.\n ИЛИ Нажмите [$BTN_UNBIND] чтобы отвязать.\n ИЛИ Нажмите [$BTN_CANCEL] для отмены.
+qc_menu_bind_prompt_controller_title	Привязать кнопку контроллера
+qc_menu_bind_prompt_controller_desc	Ожидание...\nНажмите кнопку контроллера чтобы привязать.\n ИЛИ Нажмите [$BTN_UNBIND] чтобы отвязать.\n ИЛИ Нажмите [$BTN_CANCEL] для отмены.
+qc_bind_status_success_title	Успешно
+qc_bind_status_success_desc	Привязано [$ACTION] к [$KEYNAME].
+qc_bind_status_unbound	[Не привязано]
+qc_bind_status_title	Привязать к: [$KEYNAME]
+qc_bind_status_desc	Нажмите чтобы привязать...
+qc_menu_customize_radial_title	Настроить Radial.
+qc_menu_customize_radial_desc	Нажмите чтобы настроить Radial.
+qc_menu_customize_voiceline_title	Голосовые команды
+qc_menu_customize_voiceline_desc	Синхронизированная голосовая команда, проигрывающаяся если эта опция выбрана
+qc_menu_customize_anim_title	Жест
+qc_menu_customize_anim_desc	Синхронизированная анимация от первого лица, срабатывающая при выборе этой опции
+qc_menu_waypoint_timer_title	Таймер
+qc_menu_waypoint_timer_desc	Синхронизированный счетчик в секундах для метки. Выставьте 0 для отключения
+qc_menu_waypoint_icon_title	Иконка
+qc_menu_waypoint_icon_desc	Синхронизированная иконка для метки
+qc_menu_waypoint_label_title	Текст
+qc_menu_waypoint_label_desc	Синхронизированный пресет текста, появляющийся на метке
+qc_menu_ptm_title	Заранее переведенное сообщение
+qc_menu_ptm_desc	Заранее преведенное сообщение отправляемое в чат. Все пользователи Быстрого Чата увидят сообщение на своем языке
+qc_menu_waypoint_title	Метка
+qc_menu_waypoint_desc	Синхронизированная отметка в интерфейсе, обозначающая позицию, человека или объект интереса, оставленная игроком
+qc_menu_waypoints_ping_sound_enabled_title	Звук Метки Включен
+qc_menu_waypoints_ping_sound_enabled_desc	Проигрывать звук, когда кто-либо ставит метку
+qc_menu_waypoints_acknowledged_sound_enabled_title	Звук о подтверждении метки Включен
+qc_menu_waypoints_acknowledged_sound_enabled_desc	Проигрывать звук когда игрок подверждает метку
+qc_menu_waypoints_unacknowledge_sound_enabled_title	Звук об отмене подтверждения метки
+qc_menu_waypoints_unacknowledge_sound_enabled_desc	Проигрывать звук когда кто-либо удаляет метку или отменяет подтверждение
+qc_menu_waypoints_generic_sound_volume_title	Громкость
+qc_menu_waypoints_generic_sound_volume_desc	Громкость звука
+qc_menu_waypoints_generic_sound_id_title	Звуковой файл
+qc_menu_waypoints_generic_sound_id_desc	Выберите какой звук проигрывать во время определенных действий
+qc_menu_debug_logs_enabled_title	Debug logs
+qc_menu_debug_logs_enabled_desc	Сообщения о дигностике. Лучше оставить для большей производительности
+qc_menu_compatibility_gcw_enabled_title	Совместимость: Goonmod's Custom Waypoints
+qc_menu_compatibility_gcw_enabled_desc	Позволить отправлять/получать метки союзиков у которых есть Goonmod's Custom Waypoints.
+qc_menu_waypoints_alert_on_registration_title	Оповещать если у союзника есть QuickChat
+qc_menu_waypoints_alert_on_registration_desc	Показывать приватное сообщение, если игрок использующий QuickChat присоединяется к игре
+qc_menu_waypoints_aim_dot_threshold_title	Чувствительность \"Удалить/Подтвердить\"
+qc_menu_waypoints_aim_dot_threshold_desc	Насколько близко нужно прицелиться на метку, чтобы подтвердить её
+qc_menu_waypoints_attenuate_alpha_mode_title	Исчезающие метки
+qc_menu_waypoints_attenuate_alpha_mode_desc	Делает метки прозрачными, чтобы предотвратить загромождение экрана
+qc_menu_waypoints_attenuate_alpha_mode_option_hide_disabled	Всегда показывать
+qc_menu_waypoints_attenuate_alpha_mode_option_hide_center	Исчезание по центру
+qc_menu_waypoints_attenuate_alpha_mode_option_hide_edges	Исчезание по краям
+qc_menu_waypoints_attenuate_alpha_min_title	Прозрачность Меток
+qc_menu_waypoints_attenuate_alpha_min_desc	Видимость прозрачных меток. Большие номера видны отчетливее
+qc_menu_waypoints_attentuate_dot_threshold_title	Дальность Размытия Меток Далеко
+qc_menu_waypoints_attentuate_dot_threshold_desc	Дистанция на которой метки будут становится прозрачными
+qc_menu_user_language_title	Язык пользователя
+qc_menu_user_language_title_desc	Выберите свой язык
+qc_menu_waypoints_auto_icon_title	Автоматическая иконка
+qc_menu_waypoints_auto_icon_desc	Для быстрой метки, определить иконку метки автоматически
