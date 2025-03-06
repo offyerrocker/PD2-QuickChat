@@ -164,7 +164,14 @@ QuickChat.default_settings = {
 	waypoints_aim_dot_threshold = 0.995,
 	waypoints_attenuate_alpha_mode = 1, -- 1: do not fadeout. 2: fadeout at screen center. 3: fadeout at screen edges.
 	waypoints_attenuate_dot_threshold = 0.96,
-	waypoints_attenuate_alpha_min = 0.5
+	waypoints_attenuate_alpha_min = 0.5,
+	
+	-- hidden options below (no menu interface)
+	_l10n_load_optimization = 2
+		-- mode 1: reads each language file only once, and caches the whole thing in state memory.
+			-- only one IO operation, so slightly faster load time, but every language file is perpetually kept in memory, so increased memory burden the more languages there are.
+		-- mode 2: reads each language file multiple times- minimum 1, maximum 2 (once to get the language names for the options menu, and once more for actually selecting and loading a given language);
+			-- two IO operations instead of one, so longer load times but very slightly less memory consumption (increased benefits the more languages there are)
 }
 
 QuickChat.settings = table.deep_map_copy(QuickChat.default_settings) --general user pref
@@ -189,7 +196,9 @@ QuickChat.sort_settings = {
 	"waypoints_aim_dot_threshold",
 	"waypoints_attenuate_alpha_mode",
 	"waypoints_attenuate_dot_threshold",
-	"waypoints_attenuate_alpha_min"
+	"waypoints_attenuate_alpha_min",
+	
+	"_l10n_load_optimization"
 }
 QuickChat._bindings = {}
 
@@ -1196,10 +1205,35 @@ QuickChat._message_cooldowns = {} -- locally enforced chat rate limiter
 QuickChat.TEXT_MESSAGE_COOLDOWN_COUNT = 3 -- maximum of three messages
 QuickChat.TEXT_MESSAGE_COOLDOWN_INTERVAL = 2 -- each one has a cooldown of 2 seconds
 
-QuickChat._language_data = {} -- holds localized strings for each language
-QuickChat._is_loc_loaded = false
+QuickChat._language_data = {} -- cache for localization strings for each language;
+-- note that the cache is dumped on state reload,
+-- and the table is normally only populated with the selected language,
+-- so this is just a buffer to prevent excessive io operations if the user is scrolling through the available languages
 
-QuickChat._localized_sound_names = {} -- holds sound names for the menu's multiplechoice
+QuickChat._is_loc_loaded = false
+QuickChat._loc_strings_load_queue = {
+--[[ 
+-- array containing string[]s waiting to be loaded once LocalizationManager is initialized
+-- example: (note: FILO, so entries at the end are loaded first)
+	{
+		qc_lang_en = "English",
+		qc_lang_es = "Spanish",
+		qc_lang_fr = "French",
+		qc_lang_cn = "Chinese (Simplified)",
+		-- ... etc.
+	},
+	{
+		qc_ptm_general_yes = "Yes",
+		qc_ptm_general_no = "No",
+		qc_ptm_general_greeting = "Hello!",
+		qc_ptm_general_thanks = "Thanks!",
+		qc_ptm_general_apology = "Sorry...",
+		qc_ptm_general_curse = "$#@%!"
+		-- ... etc.
+	}
+--]]
+} -- note: table is set to nil after LocalizationManager is initialized, and is no longer used at that point
+
 QuickChat._ping_sounds = { -- only played locally, controlled by local user settings
 	bird = QuickChat._assets_path .. "sounds/bird.ogg",
 	retro = QuickChat._assets_path .. "sounds/retro.ogg",
@@ -1555,21 +1589,112 @@ function QuickChat.GetFiles(path,...)
 	end
 end
 
-function QuickChat:ChooseLanguage(lang_name)
-	if lang_name and self._language_data[lang_name] then
-		if self._is_loc_loaded then
-			managers.localization:add_localized_strings(self._language_data[lang_name])
-		else
-			Hooks:Add("LocalizationManagerPostInit","QuickChat_load_localization_file",function(loc)
-				QuickChat._is_loc_loaded = true
-				loc:add_localized_strings(self._language_data[lang_name])
-			end)
-		end
+function QuickChat:AddLocStrings(tbl)
+	if self._is_loc_loaded then
+		managers.localization:add_localized_strings(tbl)
 	else
-		self:Print("No language by name:",lang_name)
+		self._loc_strings_load_queue[#self._loc_strings_load_queue] = tbl
 	end
 end
 
+function QuickChat:ChooseLanguage(lang_name)
+	if lang_name then 
+		self:Print("Using selected language:",lang_name)
+		local lang_data = self._language_data[lang_name] 
+		if lang_data then 
+			if lang_data.strings then
+				self:Print("Found lang data in cache.")
+				self:AddLocStrings(lang_data.strings)
+			elseif lang_data.path then 
+				self:Print("No cached data for language.")
+				self:LoadLanguageFile(lang_data.path)
+			else
+				-- unhandled case; should not occur
+				self:Print("ChooseLanguage() Error: no strings/path in _language_data entry for lang:",lang_name)
+			end
+		else
+			-- load language
+			local path = self._l10n_path .. lang_name .. ".tsv"
+			self:Print("ChooseLanguage() Language file unknown for language",lang_name,"...Guessing file path:",path)
+			self:LoadLanguageFile(path)
+		end
+	else
+		self:Print("ChooseLanguage() invalid lang_name given:",lang_name)
+	end
+end
+
+function QuickChat:LoadLanguageFile(path)
+	self:Print("Loading localization file at:",path)
+	if io.file_is_readable(path) then
+		local lang_strings
+		local success,e = blt.pcall(function()
+			lang_strings = self.parse_l10n_csv(path)
+		end)
+		
+		if success then
+			self:AddLocStrings(lang_strings)
+			return true
+		else
+			self:Print("Failed loading localization file:",path,e)
+		end
+	else
+		self:Print("Could not read language file at:",path)
+	end
+	return false
+end
+
+-- browse the available language files in the l10n directory to populate the available language options
+-- note: this also dumps the current language cache
+function QuickChat:FindLanguageFiles()
+	self:Log("Finding localization files...")
+	local l10n_path = self._l10n_path
+	local OPTIMIZE_MEMORY = self.settings._l10n_load_optimization ~= 2 -- technically should be == 1 but i want the default/fallback to be optimizing memory over load times if the setting does not exist
+	
+	local lang_names
+	for _,filename in pairs(self.GetFiles(l10n_path)) do 
+		--self:Print("loc file:",l10n_path,filename)
+		local lang_rev = string.reverse(filename)
+		local a,b = string.find(lang_rev,"%.")
+		local ext = string.reverse(string.sub(lang_rev,1,a-1))
+		local lang_name = string.reverse(string.sub(lang_rev,b+1))
+		if ext == "tsv" and lang_name and lang_name ~= "" then
+			self:Print("Found localization file:",lang_name,ext)
+			
+			local path = l10n_path .. filename
+			local lang_strings
+			
+			local success,e = blt.pcall(function()
+				lang_strings = self.parse_l10n_csv(path)
+			end)
+			if success then
+				local lang_loc_id = "qc_lang_" .. lang_name
+				local lang_name_localized = lang_strings.qc_this_language
+				local lang_data = {
+					path = path,
+					lang_loc_id = lang_loc_id,
+					lang_loc_name = lang_name_localized,
+					strings = nil
+				}
+				if not OPTIMIZE_MEMORY then 
+					lang_data.strings = lang_strings
+				end
+				lang_names = lang_names or {}
+				lang_names[lang_loc_id] = lang_name_localized
+				self._language_data[lang_name] = lang_data
+			else
+				self:Print("Failed loading loc file:",filename,e)
+			end
+		else
+			self:Print("Invalid ext for localization file:",lang_name,ext)
+		end
+	end
+	
+	if lang_names then
+		self:AddLocStrings(lang_names)
+	end
+end
+
+-- deprecated; do not use
 function QuickChat:LoadLanguageFiles()
 	self:Log("Loading localization files...")
 	local l10n_path = self._l10n_path
@@ -1589,18 +1714,9 @@ function QuickChat:LoadLanguageFiles()
 				local lang_name = string.reverse(string.sub(lang_rev,b+1))
 				
 				self._language_data[lang_name] = data
-				
-				if self._is_loc_loaded then
-					managers.localization:add_localized_strings({
-						["qc_lang_" .. lang_name] = data.qc_this_language
-					})
-				else
-					Hooks:Add("LocalizationManagerPostInit","QuickChat_add_lang_codes",function(loc)
-						loc:add_localized_strings({
-							["qc_lang_" .. lang_name] = data.qc_this_language
-						})
-					end)
-				end
+				self:AddLocStrings({
+					["qc_lang_" .. lang_name] = data.qc_this_language
+				})
 			end
 		else
 			self:Print("Invalid localization format:",ext)
@@ -1609,7 +1725,7 @@ function QuickChat:LoadLanguageFiles()
 	self:Log("Done loading localization files.")
 end
 
-function QuickChat.parse_l10n_csv(path) -- not yet implemented
+function QuickChat.parse_l10n_csv(path)
 	local line_num = 0
 	local lang_code
 	local all_data = {}
@@ -4379,14 +4495,16 @@ end
 
 
 Hooks:Add("MenuManagerSetupCustomMenus","QuickChat_MenuManagerSetupCustomMenus",function(menu_manager, nodes)
-	QuickChat:LoadLanguageFiles()
-	QuickChat:ChooseLanguage(QuickChat._DEFAULT_LANGUAGE_ID) -- default
+	QuickChat:FindLanguageFiles()
+	--QuickChat:ChooseLanguage(QuickChat._DEFAULT_LANGUAGE_ID) -- default
 	
 	QuickChat:CheckResourcesReady()
 	
 	QuickChat:UnpackGamepadBindings()
 	QuickChat:LoadCustomRadials()
 	QuickChat:Load()
+	
+	QuickChat:ChooseLanguage(QuickChat:GetUserLanguage())
 	
 	MenuHelper:NewMenu(QuickChat.MENU_IDS.MENU_MAIN)
 	
@@ -4408,8 +4526,6 @@ Hooks:Add("MenuManagerSetupCustomMenus","QuickChat_MenuManagerSetupCustomMenus",
 end)
 
 Hooks:Add("MenuManagerPopulateCustomMenus","QuickChat_MenuManagerPopulateCustomMenus",function(menu_manager, nodes)
-	
-	local UNBOUND_TEXT = managers.localization:text("qc_bind_status_unbound")
 	
 	local parent_menu_id = QuickChat.MENU_IDS.MENU_BINDS
 	
@@ -4479,7 +4595,7 @@ Hooks:Add("MenuManagerPopulateCustomMenus","QuickChat_MenuManagerPopulateCustomM
 	
 	--returns the callback that is called when the button is pressed
 	local function generate_menu_callback(action_type,action_subtype)
-		local current_binding_text = UNBOUND_TEXT
+		local current_binding_text = managers.localization:text("qc_bind_status_unbound")
 		
 		--called when button is pressed
 		local menu_callback = function(self)
@@ -4549,7 +4665,7 @@ Hooks:Add("MenuManagerPopulateCustomMenus","QuickChat_MenuManagerPopulateCustomM
 					if bind_data then
 						local action_name = self:GetActionDisplayName(bind_data.action_data.action_type,bind_data.action_data.sub_type)
 						self:UnbindButton(bind_data.button_name,bind_data.is_mouse_button,false)
-						refresh_menu_item(parent_menu_id,"qc_menu_bind_button_" .. action_name,UNBOUND_TEXT)
+						refresh_menu_item(parent_menu_id,"qc_menu_bind_button_" .. action_name,managers.localization:text("qc_bind_status_unbound"))
 						QuickMenu:new(
 							managers.localization:text("qc_menu_bind_prompt_unbound_title"),
 							managers.localization:text("qc_menu_bind_prompt_unbound_desc",{KEYNAME=get_button_display_name(bind_data.button_name,bind_data.is_mouse_button),ACTION=action_name}),
@@ -4648,7 +4764,7 @@ Hooks:Add("MenuManagerPopulateCustomMenus","QuickChat_MenuManagerPopulateCustomM
 		if current_button then
 			current_binding_text = managers.localization:text("qc_bind_status_title",{KEYNAME=get_button_display_name(current_button,current_is_mouse_button)})
 		else
-			current_binding_text = UNBOUND_TEXT
+			current_binding_text = managers.localization:text("qc_bind_status_unbound")
 		end
 		add_binding_button({
 			id = action_id,
@@ -4668,7 +4784,7 @@ Hooks:Add("MenuManagerPopulateCustomMenus","QuickChat_MenuManagerPopulateCustomM
 		if current_button then
 			current_binding_text = managers.localization:text("qc_bind_status_title",{KEYNAME=get_button_display_name(current_button,current_is_mouse_button)})
 		else
-			current_binding_text = UNBOUND_TEXT
+			current_binding_text = managers.localization:text("qc_bind_status_unbound")
 		end
 		
 		add_binding_button({
@@ -4688,7 +4804,7 @@ Hooks:Add("MenuManagerPopulateCustomMenus","QuickChat_MenuManagerPopulateCustomM
 		if current_button then
 			current_binding_text = managers.localization:text("qc_bind_status_title",{KEYNAME=get_button_display_name(current_button,current_is_mouse_button)})
 		else
-			current_binding_text = UNBOUND_TEXT
+			current_binding_text = managers.localization:text("qc_bind_status_unbound")
 		end
 		
 		add_binding_button({
@@ -4708,7 +4824,7 @@ Hooks:Add("MenuManagerPopulateCustomMenus","QuickChat_MenuManagerPopulateCustomM
 		if current_button then
 			current_binding_text = managers.localization:text("qc_bind_status_title",{KEYNAME=get_button_display_name(current_button,current_is_mouse_button)})
 		else
-			current_binding_text = UNBOUND_TEXT
+			current_binding_text = managers.localization:text("qc_bind_status_unbound")
 		end
 		add_binding_button({
 			id = "waypoints_clear_all",
@@ -4744,15 +4860,18 @@ Hooks:Add("MenuManagerPopulateCustomMenus","QuickChat_MenuManagerPopulateCustomM
 	
 	local lang_items = {} -- index : loc(qc_this_language)
 	local lang_ids = {} -- index : code2
+	
+	
 	for lang_id,lang_data in pairs(QuickChat._language_data) do
-		local lang_name_localized = lang_data.qc_this_language
-		table.insert(lang_ids,lang_id)
+		table.insert(lang_ids,1,lang_id)
 	end
-	table.sort(lang_ids,function(a,b)
-		return managers.localization:text(a) < managers.localization:text(b)
+	table.sort(lang_ids,function(a,b) -- sort by localized name
+		local data_a = QuickChat._language_data[a]
+		local data_b = QuickChat._language_data[b]
+		return data_a.lang_loc_name < data_b.lang_loc_name
 	end)
 	for i,lang_id in ipairs(lang_ids) do
-		lang_items[i] = "qc_lang_" .. lang_id
+		lang_items[i] = QuickChat._language_data[lang_id].lang_loc_id
 		if lang_id == selected_lang_id then
 			selected_lang_index = i
 		end
@@ -4760,7 +4879,9 @@ Hooks:Add("MenuManagerPopulateCustomMenus","QuickChat_MenuManagerPopulateCustomM
 	
 	MenuCallbackHandler[user_lang_callback_id] = function(this,item)
 		local selected_index = validate(item:value(),"number")
-		QuickChat:ChooseLanguage(lang_ids[selected_index])
+		local lang_id = lang_ids[selected_index]
+		QuickChat:ChooseLanguage(lang_id)
+		QuickChat.settings.user_language = lang_id
 		QuickChat:SaveSettings()
 	end
 	
@@ -4801,7 +4922,7 @@ Hooks:Add("MenuManagerPopulateCustomMenus","QuickChat_MenuManagerPopulateCustomM
 			unacknowledge_sound_index = i
 		end
 	end
-	managers.localization:add_localized_strings(sound_locs)
+	QuickChat:AddLocStrings(sound_locs)
 	
 	local ping_sound_callback_id = "callback_menu_waypoints_ping_sound_id"
 	MenuCallbackHandler[ping_sound_callback_id] = function(this,item)
@@ -5233,13 +5354,17 @@ Hooks:Add("LocalizationManagerPostInit","QuickChat_LocalizationManagerPostInit",
 	--end
 	
 	QuickChat._is_loc_loaded = true
-	if not QuickChat._is_loc_loaded then	
-		--QuickChat:ChooseLanguage(QuickChat.settings.user_language)
+	if QuickChat._loc_strings_load_queue then
+		for i=#QuickChat._loc_strings_load_queue,1,-1 do 
+			local strings = table.remove(QuickChat._loc_strings_load_queue,i)
+			loc:add_localized_strings(strings)
+		end
+		QuickChat._loc_strings_load_queue = nil
 	end
 	
-	if QuickChat._localized_sound_names then
-		loc:add_localized_strings(QuickChat._localized_sound_names)
-	end
+--	if not QuickChat._is_loc_loaded then	
+--		QuickChat:ChooseLanguage(QuickChat.settings.user_language)
+--	end
 end)
 
 Hooks:Add("NetworkReceivedData","QuickChat_NetworkReceivedData",function(sender, message_id, message_body)
@@ -5279,3 +5404,4 @@ Hooks:Add("GameSetupPausedUpdate","QuickChat_GamePausedUpdate",callback(QuickCha
 Hooks:Add("MenuUpdate","QuickChat_MenuUpdate",callback(QuickChat,QuickChat,"Update","MenuUpdate"))
 
 QuickChat:CheckResourcesAdded()
+
