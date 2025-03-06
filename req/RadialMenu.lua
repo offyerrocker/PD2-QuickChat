@@ -327,7 +327,7 @@ function RadialMenuDialog:recreate_gui()
 	local mouseover_label = panel:text({
 		name = "mouseover_label",
 		text = data.default_mouseover_text or "",
-		font = data.font or _G.tweak_data.hud.medium_font,
+		font = data.font or _G.tweak_data.menu.pd2_medium_font,
 		font_size = data.font_size or _G.tweak_data.menu.default_font_size,
 		align = "center",
 		vertical = "center",

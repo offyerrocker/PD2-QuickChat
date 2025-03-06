@@ -3255,7 +3255,7 @@ function QuickChat:_AddWaypoint(peer_id,waypoint_data) --called for both local p
 		local label = waypoint_panel:text({
 			name = "label",
 			text = label_text or "",
-			font = "fonts/font_medium_shadow_mf",
+			font = tweak_data.menu.pd2_medium_font,
 			font_size = label_font_size,
 			align = "center",
 			vertical = "top",
