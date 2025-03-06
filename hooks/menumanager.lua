@@ -3860,7 +3860,17 @@ function QuickChat:ReceivePresetMessage(peer_id,preset_text_index)
 	end
 end
 
+-- checks whether sending a chat message is blocked by cooldown
+-- returns true if message can be sent; else, returns false
 function QuickChat:CheckChatCooldown(is_sending)
+	local session = managers.network and managers.network:session()
+	if session then
+		if session:amount_of_players() == 1 then 
+			-- don't limit chat messages (or count against cooldown) if singleplayer or is the only person in the lobby
+			return true
+		end
+	end
+	
 	local cooldowns = self._message_cooldowns
 	
 	local t = Application:time()
