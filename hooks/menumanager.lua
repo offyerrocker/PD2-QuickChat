@@ -1694,37 +1694,6 @@ function QuickChat:FindLanguageFiles()
 	end
 end
 
--- deprecated; do not use
-function QuickChat:LoadLanguageFiles()
-	self:Log("Loading localization files...")
-	local l10n_path = self._l10n_path
-	for _,filename in pairs(self.GetFiles(l10n_path)) do 
-		self:Print("loc file:",l10n_path,filename)
-		local lang_rev = string.reverse(filename)
-		local a,b = string.find(lang_rev,"%.")
-		local ext = string.reverse(string.sub(lang_rev,1,a-1))
-		if ext == "tsv" then
-			local data
-			local success,e = blt.pcall(function()
-				data = self.parse_l10n_csv(l10n_path .. filename)
-			end)
-			if not success then
-				self:Print("Could not load localization file:",filename,e)
-			else
-				local lang_name = string.reverse(string.sub(lang_rev,b+1))
-				
-				self._language_data[lang_name] = data
-				self:AddLocStrings({
-					["qc_lang_" .. lang_name] = data.qc_this_language
-				})
-			end
-		else
-			self:Print("Invalid localization format:",ext)
-		end
-	end
-	self:Log("Done loading localization files.")
-end
-
 function QuickChat.parse_l10n_csv(path)
 	local line_num = 0
 	local lang_code
@@ -4432,11 +4401,6 @@ function QuickChat:LoadBindings(filename)
 	end
 end
 
-function QuickChat:Load() -- deprecated
-	self:LoadSettings()
-	self:LoadBindings(self:GetBindingsFileName())
-end
-
 function QuickChat:Save()
 	self:SaveSettings()
 	self:SaveBindings(self:GetBindingsFileName())
@@ -4563,6 +4527,16 @@ function QuickChat.add_menu_option_from_data(priority,menu_data,parent_menu_id,s
 		end
 	end
 end
+
+--Deprecated functions
+function QuickChat:Load() -- DEPRECATED; do not use
+	self:Log("Load() is deprecated - please use LoadBindings() or LoadSettings() separately instead!")
+end
+
+function QuickChat:LoadLanguageFiles() -- DEPRECATED; do not use
+	self:Log("LoadLanguageFiles() is deprecated - please use LoadLanguageFile() or FindLanguageFiles() instead!")
+end
+
 
 
 Hooks:Add("MenuManagerSetupCustomMenus","QuickChat_MenuManagerSetupCustomMenus",function(menu_manager, nodes)
