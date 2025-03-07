@@ -23,9 +23,6 @@
 			-- but that would disable other pings, eg. pinging a car, then picking up a bag, would remove the car ping, since you can't enter a car while carrying a bag
 			-- case-specific solution it is i guess.
 	
-	--auto icon for units
-		-- menu option
-	
 	-- lock/lockpick icon?
 	-- grenade case icon
 	
@@ -39,10 +36,6 @@
 	-- toggle for allowing unit tagging
 	-- allow peers to send a mute command
 	-- radial deadzone/size/alpha menu option
-	
-	-- todo don't keep all languages in memory;
-		-- read all the potential filenames and use those in the menu instead?
-		-- load language files on demand and overwrite previous loc
 	
 	--SCHEMA
 		--validate buttons on startup; no duplicate actions in binds
@@ -2231,12 +2224,32 @@ end
 
 -- called when localization has changed and text needs to be refreshed
 function QuickChat:OnLocalizationChanged()
+	if not managers.localization then
+		return
+	end
+	
 	-- update radials with new localization
 	QuickChat:LoadCustomRadials()
 	QuickChat:PopulateInputCache()
 	QuickChat:PopulateActions()
 	
-	-- todo change all waypoints
+	for peer_id,waypoint_data in pairs(self._synced_waypoints) do 
+		for waypoint_index,waypoint in pairs(waypoint_data) do 
+			local panel = waypoint.panel
+			if alive(panel) then
+				if waypoint.creation_data and waypoint.creation_data.label_index then 
+					local label_id = self._label_presets_by_index[waypoint.creation_data.label_index]
+					local label_text = label_id and managers.localization:text(label_id)
+					if label_text then
+						panel:child("label"):set_text(label_text)
+					end
+				end
+			end
+			-- panel:child("desc"):set_text("here's where i'd put a desc... IF I HAD ONE")
+			--this is not necessary since the desc only holds timer or distance, which are numbers that don't need localization (afaik)
+		end
+	end
+	
 	-- todo change chat messages? probably not feasible
 	-- todo change menu buttons? those don't seem to refresh when the rest of the menu items do
 end
