@@ -14,8 +14,8 @@ Ping sounds by Malfaltto.
 
 English: Offyerrocker
 
-Spanish: Anonymous
+Spanish: absolutelynotcrisdev
 
-Chinese: Anonymous
+Chinese (Simplified): YanG
 
-Russian: Anonymous
+Russian: vince_remington
