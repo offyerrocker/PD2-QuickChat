@@ -19,3 +19,5 @@ Spanish: absolutelynotcrisdev
 Chinese (Simplified): YanG
 
 Russian: vince_remington
+
+Turkish: Val
